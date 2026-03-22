@@ -436,7 +436,10 @@ function onYTState(e) {
 // SEARCH
 // ============================================================
 async function searchYouTube(q) {
-  const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(q+' official audio')}&sp=EgIQAQ%3D%3D`);
+  const query = encodeURIComponent(q + ' official audio');
+  const ytUrl = `https://www.youtube.com/results?search_query=${query}&sp=EgIQAQ%3D%3D`;
+  const proxy = `https://corsproxy.io/?${encodeURIComponent(ytUrl)}`;
+  const res = await fetch(proxy);
   const text = await res.text();
   const matches = [...text.matchAll(/"videoId":"([^"]{11})","title":\{"runs":\[\{"text":"([^"]+)"\}\][^}]*\},"longBylineText":\{"runs":\[\{"text":"([^"]+)"/g)];
   const seen = new Set();

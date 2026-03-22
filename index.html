@@ -411,6 +411,7 @@ let activePlaylistId = null;
 let addToPlaylistTarget = null;
 let searchResults = [], searchQuery = '', searchLoading = false;
 let searchDebounce;
+let playHistory = JSON.parse(localStorage.getItem("chopify_history") || "[]");
 
 // ============================================================
 // YOUTUBE
@@ -456,6 +457,8 @@ function playSong(song, qList, idx) {
   currentSongIndex = idx !== undefined ? idx : currentQueue.findIndex(s=>s.id===song.id);
   if(currentSongIndex===-1){ currentQueue=[song]; currentSongIndex=0; }
   updateNowPlayingUI(song);
+  playHistory = [song, ...playHistory.filter(s=>s.id!==song.id)].slice(0,30);
+  localStorage.setItem("chopify_history", JSON.stringify(playHistory));
   if(ytReady) ytPlayer.loadVideoById(song.id);
   renderCurrentPage();
 }
@@ -471,6 +474,22 @@ function updateNowPlayingUI(song) {
   document.getElementById('np-title').textContent = song.title;
   document.getElementById('np-artist').textContent = song.artist;
   updateHeartButtons(song);
+  // Media Session API — lock screen controls
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.title,
+      artist: song.artist,
+      album: 'Chopify',
+      artwork: [
+        { src: song.thumb, sizes: '320x180', type: 'image/jpeg' }
+      ]
+    });
+    navigator.mediaSession.setActionHandler('play', () => { ytPlayer.playVideo(); });
+    navigator.mediaSession.setActionHandler('pause', () => { ytPlayer.pauseVideo(); });
+    navigator.mediaSession.setActionHandler('nexttrack', () => { nextSong(); });
+    navigator.mediaSession.setActionHandler('previoustrack', () => { prevSong(); });
+    navigator.mediaSession.setActionHandler('stop', () => { ytPlayer.pauseVideo(); });
+  }
 }
 
 function togglePlay() {
@@ -520,6 +539,9 @@ function setPlayIcons(playing) {
   document.getElementById('np-play-icon').innerHTML=icon;
   document.getElementById('mini-play-icon').innerHTML=icon;
   document.getElementById('np-art').classList.toggle('playing',playing);
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
+  }
 }
 
 function startProgress(){ stopProgress(); progressTimer=setInterval(updateProgress,500); }
@@ -685,7 +707,7 @@ function renderCurrentPage(){
 
 function renderHome(){
   const el=document.getElementById('page-home');
-  const recent=currentQueue.slice(0,10);
+  const recent=playHistory.slice(0,10);
   const h=new Date().getHours();
   const greet=h<12?'Morning':'Good '+(h<17?'afternoon':'evening');
   el.innerHTML=`

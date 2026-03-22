@@ -436,18 +436,16 @@ function onYTState(e) {
 // SEARCH
 // ============================================================
 async function searchYouTube(q) {
-  const query = encodeURIComponent(q + ' official audio');
-  const ytUrl = `https://www.youtube.com/results?search_query=${query}&sp=EgIQAQ%3D%3D`;
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(ytUrl)}`;
-  const res = await fetch(proxy);
+  const YT_API_KEY = "AIzaSyCk_AuxfMGwuPxsrp7K-UV7nH6D76EZn9M";
+  const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=10&q=${encodeURIComponent(q)}&key=${YT_API_KEY}`);
   const json = await res.json();
-  const text = json.contents;
-  const matches = [...text.matchAll(/"videoId":"([^"]{11})","title":\{"runs":\[\{"text":"([^"]+)"\}\][^}]*\},"longBylineText":\{"runs":\[\{"text":"([^"]+)"/g)];
-  const seen = new Set();
-  return matches.map(m=>{
-    if(seen.has(m[1]))return null; seen.add(m[1]);
-    return {id:m[1],title:m[2],artist:m[3],thumb:`https://img.youtube.com/vi/${m[1]}/mqdefault.jpg`};
-  }).filter(Boolean).slice(0,10);
+  if(!json.items) return [];
+  return json.items.map(item => ({
+    id: item.id.videoId,
+    title: item.snippet.title,
+    artist: item.snippet.channelTitle,
+    thumb: item.snippet.thumbnails.medium?.url || `https://img.youtube.com/vi/${item.id.videoId}/mqdefault.jpg`
+  }));
 }
 
 // ============================================================

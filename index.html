@@ -629,6 +629,7 @@ console.log('Chopify: iTunes response status', r.status);
 return r.json();
 })
 .then(function(j) {
+console.log('Chopify: iTunes results', JSON.stringify(j).slice(0, 200));
 if (!j.results || !j.results.length) {
 var titleOnly = encodeURIComponent(title);
 return fetch('/api/itunes?q=' + titleOnly)

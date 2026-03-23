@@ -420,7 +420,9 @@ function fetchRecs() {
   if (!playHistory.length) return;
   // Use the most recently played song to seed recommendations
   var seed = playHistory[0];
-  var q = encodeURIComponent(seed.artist + ' ' + seed.title + ' mix');
+  var artist = seed.artist.replace(/ - Topic$/, '').replace(/VEVO$/, '').trim();
+  var q = encodeURIComponent(artist + ' songs');
+
   fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=12&q=' + q + '&key=' + YT_KEY)
     .then(function(r) { return r.json(); })
     .then(function(j) {

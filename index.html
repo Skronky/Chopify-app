@@ -646,6 +646,34 @@ document.getElementById('results').addEventListener('click', function(e) {
 });
 
 // Playback
+function fetchAlbumArt(song) {
+  // Clean up artist name (remove VEVO, Topic etc)
+  var artist = song.artist.replace(/ - Topic$/i,'').replace(/VEVO$/i,'').replace(/official$/i,'').trim();
+  // Clean up title (remove things like "(Official Video)", "ft.", etc)
+  var title = song.title.replace(/\(.*?\)/g,'').replace(/\[.*?\]/g,'').replace(/ft\..*$/i,'').replace(/feat\..*$/i,'').trim();
+  var q = encodeURIComponent(title + ' ' + artist);
+  fetch('https://itunes.apple.com/search?term=' + q + '&entity=song&limit=3')
+    .then(function(r) { return r.json(); })
+    .then(function(j) {
+      if (!j.results || !j.results.length) return;
+      var art = j.results[0].artworkUrl100;
+      if (!art) return;
+      // Upgrade to 600x600
+      art = art.replace('100x100bb', '600x600bb');
+      // Update now playing art
+      var npArt = document.getElementById('np-art');
+      if (npArt) {
+        npArt.style.opacity = '0';
+        setTimeout(function() {
+          npArt.src = art;
+          npArt.onload = function() { npArt.style.opacity = '1'; };
+          npArt.onerror = function() { npArt.style.opacity = '1'; };
+        }, 150);
+      }
+    })
+    .catch(function() {});
+}
+
 function playSong(song, q, idx) {
   curSong = song;
   queue = q && q.length ? q : [song];
@@ -656,6 +684,7 @@ function playSong(song, q, idx) {
   document.getElementById('mini-artist').textContent = song.artist;
   document.getElementById('mini').classList.add('show');
   document.getElementById('np-art').src = song.thumb;
+  fetchAlbumArt(song);
   document.getElementById('np-title').textContent = song.title;
   document.getElementById('np-artist-txt').textContent = song.artist;
   updateHeart();

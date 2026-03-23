@@ -362,6 +362,7 @@ var ytOk = false;
 var progTimer = null;
 var searchDebounce = null;
 var searchResults = [];
+var artCache = {};
 
 var curPage = 'home';
 function showPage(pg) {
@@ -473,7 +474,7 @@ html += '<div class="hscroll">';
 for (var i = 0; i < Math.min(playHistory.length, 10); i++) {
 var s = playHistory[i];
 html += '<div class="hcard" data-hist-idx="' + i + '">'
-+ '<img src="' + s.thumb + '" loading="lazy"/>'
++ '<img src="' + (artCache[s.id] || s.thumb) + '" loading="lazy"/>'
 + '<div class="hcard-title">' + esc(s.title) + '</div>'
 + '<div class="hcard-artist">' + esc(s.artist) + '</div>'
 + '</div>';
@@ -486,7 +487,7 @@ html += '<div class="hscroll">';
 for (var r = 0; r < recs.length; r++) {
 var rc = recs[r];
 html += '<div class="hcard" data-rec-idx="' + r + '">'
-+ '<img src="' + rc.thumb + '" loading="lazy"/>'
++ '<img src="' + (artCache[rc.id] || rc.thumb) + '" loading="lazy"/>'
 + '<div class="hcard-title">' + esc(rc.title) + '</div>'
 + '<div class="hcard-artist">' + esc(rc.artist) + '</div>'
 + '</div>';
@@ -502,7 +503,7 @@ html += '<div class="hscroll">';
 for (var j = 0; j < Math.min(liked.length, 10); j++) {
 var ls = liked[j];
 html += '<div class="hcard" data-liked-idx="' + j + '">'
-+ '<img src="' + ls.thumb + '" loading="lazy"/>'
++ '<img src="' + (artCache[ls.id] || ls.thumb) + '" loading="lazy"/>'
 + '<div class="hcard-title">' + esc(ls.title) + '</div>'
 + '<div class="hcard-artist">' + esc(ls.artist) + '</div>'
 + '</div>';
@@ -589,7 +590,7 @@ var s = searchResults[i];
 var l = isLiked(s.id);
 var p = curSong && curSong.id === s.id;
 html += '<div class="row" data-idx="' + i + '">'
-+ '<img src="' + s.thumb + '" loading="lazy"/>'
++ '<img src="' + (artCache[s.id] || s.thumb) + '" loading="lazy"/>'
 + '<div class="row-info">'
 + '<div class="row-title' + (p ? ' playing' : '') + '">' + esc(s.title) + '</div>'
 + '<div class="row-artist">' + esc(s.artist) + '</div>'
@@ -617,7 +618,44 @@ if (!isNaN(idx) && searchResults[idx]) playSong(searchResults[idx], searchResult
 }
 });
 
+function applyArt(songId, artUrl) {
+artCache[songId] = artUrl;
+if (curSong && curSong.id === songId) {
+document.getElementById('mini-img').src = artUrl;
+setNPArt(artUrl);
+}
+var rows = document.querySelectorAll('#results .row[data-idx]');
+for (var i = 0; i < rows.length; i++) {
+var idx = parseInt(rows[i].getAttribute('data-idx'), 10);
+if (searchResults[idx] && searchResults[idx].id === songId) {
+var img = rows[i].querySelector('img');
+if (img) img.src = artUrl;
+}
+}
+var hcards = document.querySelectorAll('.hcard');
+for (var j = 0; j < hcards.length; j++) {
+var card = hcards[j];
+var sid = null;
+if (card.hasAttribute('data-hist-idx')) sid = (playHistory[parseInt(card.getAttribute('data-hist-idx'),10)] || {}).id;
+else if (card.hasAttribute('data-rec-idx')) sid = (recs[parseInt(card.getAttribute('data-rec-idx'),10)] || {}).id;
+else if (card.hasAttribute('data-liked-idx')) sid = (liked[parseInt(card.getAttribute('data-liked-idx'),10)] || {}).id;
+if (sid === songId) { var himg = card.querySelector('img'); if (himg) himg.src = artUrl; }
+}
+var likedRows = document.querySelectorAll('#liked-list .row');
+for (var k = 0; k < likedRows.length; k++) {
+if (liked[k] && liked[k].id === songId) {
+var limg = likedRows[k].querySelector('img');
+if (limg) limg.src = artUrl;
+}
+}
+}
+
 function fetchAlbumArt(song) {
+if (artCache[song.id]) {
+setNPArt(artCache[song.id]);
+if (curSong && curSong.id === song.id) document.getElementById('mini-img').src = artCache[song.id];
+return;
+}
 try {
 var artist = song.artist.replace(/ - Topic$/i,'').replace(/VEVO$/i,'').replace(/official$/i,'').trim();
 var title = song.title.replace(/\(.*?\)/g,'').replace(/\[.*?\]/g,'').replace(/-.*$/,'').trim();
@@ -638,8 +676,8 @@ return fetch('/api/itunes?q=' + titleOnly)
 if (!j2.results || !j2.results.length) return;
 var art2 = j2.results[0].artworkUrl100;
 if (!art2) return;
-art2 = art2.replace('100x100bb', '600x600bb');
-setNPArt(art2);
+art2 = art2.replace('100x100bb.jpg', '600x600bb.jpg');
+applyArt(song.id, art2);
 });
 }
 var best = j.results[0];
@@ -649,10 +687,9 @@ best = j.results[i]; break;
 }
 }
 var art = best.artworkUrl100;
-console.log('Chopify: art url', art);
 if (!art) return;
 art = art.replace('100x100bb.jpg', '600x600bb.jpg');
-setNPArt(art);
+applyArt(song.id, art);
 })
 .catch(function(err) { console.error('Chopify: iTunes fetch error', err); });
 } catch(e) { console.error('Chopify: fetchAlbumArt exception', e); }

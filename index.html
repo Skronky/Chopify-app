@@ -647,19 +647,37 @@ document.getElementById('results').addEventListener('click', function(e) {
 
 // Playback
 function fetchAlbumArt(song) {
-  // Clean up artist name (remove VEVO, Topic etc)
   var artist = song.artist.replace(/ - Topic$/i,'').replace(/VEVO$/i,'').replace(/official$/i,'').trim();
-  // Clean up title (remove things like "(Official Video)", "ft.", etc)
-  var title = song.title.replace(/\(.*?\)/g,'').replace(/\[.*?\]/g,'').replace(/ft\..*$/i,'').replace(/feat\..*$/i,'').trim();
+  var title = song.title.replace(/\(Official.*?\)/gi,'').replace(/\[Official.*?\]/gi,'').replace(/\(Audio.*?\)/gi,'').replace(/\(Lyric.*?\)/gi,'').replace(/\(Live.*?\)/gi,'').trim();
+  // Try title + artist first, then just title if no results
   var q = encodeURIComponent(title + ' ' + artist);
-  fetch('https://itunes.apple.com/search?term=' + q + '&entity=song&limit=3')
+  fetch('https://itunes.apple.com/search?term=' + q + '&entity=song&limit=5&country=us')
     .then(function(r) { return r.json(); })
     .then(function(j) {
-      if (!j.results || !j.results.length) return;
-      var art = j.results[0].artworkUrl100;
+      if (!j.results || !j.results.length) {
+        // Fallback: try searching just the title
+        var titleOnly = encodeURIComponent(title);
+        return fetch('https://itunes.apple.com/search?term=' + titleOnly + '&entity=song&limit=3&country=us')
+          .then(function(r2) { return r2.json(); })
+          .then(function(j2) {
+            if (!j2.results || !j2.results.length) return;
+            var art2 = j2.results[0].artworkUrl100;
+            if (!art2) return;
+            art2 = art2.replace('100x100bb', '100000x100000-999');
+            var npArt = document.getElementById('np-art');
+            if (npArt) { npArt.style.opacity='0'; setTimeout(function(){ npArt.src=art2; npArt.onload=function(){npArt.style.opacity='1';}; npArt.onerror=function(){npArt.style.opacity='1';}; },150); }
+          });
+      }
+      // Pick best match - prefer exact artist name match
+      var best = j.results[0];
+      for (var i = 0; i < j.results.length; i++) {
+        if (j.results[i].artistName && j.results[i].artistName.toLowerCase().indexOf(artist.toLowerCase().split(' ')[0]) > -1) {
+          best = j.results[i]; break;
+        }
+      }
+      var art = best.artworkUrl100;
       if (!art) return;
-      // Upgrade to 600x600
-      art = art.replace('100x100bb', '600x600bb');
+      art = art.replace('100x100bb', '100000x100000-999');
       // Update now playing art
       var npArt = document.getElementById('np-art');
       if (npArt) {

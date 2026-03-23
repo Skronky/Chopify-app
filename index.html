@@ -148,7 +148,7 @@ color:#000; transition:transform 0.15s;
 
 /* SONG CARD (list style) */
 .song-list { display:flex; flex-direction:column; }
-.song-card { display:flex; align-items:center; gap:12px; padding:10px 16px; cursor:pointer; transition:background 0.15s; active:background(var(–surface2)); }
+.song-card { display:flex; align-items:center; gap:12px; padding:10px 16px; cursor:pointer; transition:background 0.15s; -webkit-tap-highlight-color:transparent; }
 .song-card:active { background:var(–surface2); }
 .song-card.playing .sc-title { color:var(–accent); }
 .sc-thumb { width:52px; height:52px; border-radius:10px; object-fit:cover; background:var(–surface3); flex-shrink:0; }
@@ -178,7 +178,7 @@ color:#000; transition:transform 0.15s;
 /* HORIZONTAL SCROLL CARDS */
 .hscroll { display:flex; gap:12px; padding:0 16px; overflow-x:auto; scroll-snap-type:x mandatory; }
 .hscroll::-webkit-scrollbar { display:none; }
-.h-card { flex-shrink:0; width:140px; scroll-snap-align:start; cursor:pointer; }
+.h-card { flex-shrink:0; width:140px; scroll-snap-align:start; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .h-card:active .h-thumb { transform:scale(0.97); }
 .h-thumb { width:140px; height:140px; border-radius:12px; object-fit:cover; background:var(–surface2); transition:transform 0.15s; margin-bottom:8px; }
 .h-title { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -186,7 +186,7 @@ color:#000; transition:transform 0.15s;
 
 /* PLAYLISTS PAGE */
 .pl-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 16px; }
-.pl-card { background:var(–surface2); border-radius:14px; padding:14px; cursor:pointer; transition:background 0.15s; border:1px solid var(–border); }
+.pl-card { background:var(–surface2); border-radius:14px; padding:14px; cursor:pointer; transition:background 0.15s; border:1px solid var(–border); -webkit-tap-highlight-color:transparent; }
 .pl-card:active { background:var(–surface3); }
 .pl-emoji { font-size:32px; margin-bottom:8px; }
 .pl-name { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -288,19 +288,19 @@ color:#000; transition:transform 0.15s;
 <!-- BOTTOM NAV -->
 
 <div class="bottom-nav">
-  <div class="nav-tab active" id="tab-home" onclick="showPage('home')">
+  <div class="nav-tab active" ontouchstart="" id="tab-home" onclick="showPage('home')">
     <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     <span>Home</span>
   </div>
-  <div class="nav-tab" id="tab-search" onclick="showPage('search')">
+  <div class="nav-tab" ontouchstart="" id="tab-search" onclick="showPage('search')">
     <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <span>Search</span>
   </div>
-  <div class="nav-tab" id="tab-liked" onclick="showPage('liked')">
+  <div class="nav-tab" ontouchstart="" id="tab-liked" onclick="showPage('liked')">
     <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
     <span>Liked</span>
   </div>
-  <div class="nav-tab" id="tab-library" onclick="showPage('library')">
+  <div class="nav-tab" ontouchstart="" id="tab-library" onclick="showPage('library')">
     <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     <span>Library</span>
   </div>
@@ -406,20 +406,7 @@ color:#000; transition:transform 0.15s;
 <div id="yt-player"></div>
 
 <script>
-// Global error catcher
-window.onerror = function(msg, src, line, col, err) {
-  document.body.insertAdjacentHTML('beforeend', 
-    '<div style="position:fixed;top:0;left:0;right:0;background:red;color:white;padding:12px;z-index:99999;font-size:12px;word-break:break-all">' +
-    'ERROR line ' + line + ': ' + msg + '</div>'
-  );
-  return false;
-};
-window.addEventListener('unhandledrejection', e => {
-  document.body.insertAdjacentHTML('beforeend',
-    '<div style="position:fixed;top:40px;left:0;right:0;background:orange;color:black;padding:12px;z-index:99999;font-size:12px;word-break:break-all">' +
-    'PROMISE ERROR: ' + e.reason + '</div>'
-  );
-});
+
 // ============================================================
 // STATE
 // ============================================================
@@ -663,7 +650,7 @@ function openAddToPlaylist(song){
     list.innerHTML='<p style="color:var(--text3);font-size:13px;padding:8px 0">No playlists yet!</p>';
   } else {
     list.innerHTML=playlists.map(p=>`
-      <div class="sheet-item" onclick="addToPlaylist(${p.id})">
+      <div class="sheet-item" ontouchstart="" onclick="addToPlaylist(${p.id})">
         <span style="font-size:22px">${p.emoji}</span>
         <span>${p.name}</span>
       </div>`).join('');
@@ -680,9 +667,10 @@ function addCurrentToQueue(){
   showToast('Already in queue');
 }
 
-// Song sheet
+// Song sheet - uses store key to avoid JSON in HTML
 function openSongSheet(song){
   if(!song)return;
+  const key=_save(song,[]);
   const preview=document.getElementById('sheet-song-preview');
   preview.innerHTML=`
     <img src="${song.thumb}" style="width:48px;height:48px;border-radius:10px;object-fit:cover;background:var(--surface3)"/>
@@ -690,11 +678,11 @@ function openSongSheet(song){
   const items=document.getElementById('sheet-items');
   const liked=isLiked(song.id);
   items.innerHTML=`
-    <div class="sheet-item" onclick="toggleLike(${JSON.stringify(song).replace(/"/g,'&quot;')});closeModal('song-sheet')">
+    <div class="sheet-item" ontouchstart="" onclick="_like('${key}');closeModal('song-sheet')">
       <svg width="20" height="20" fill="${liked?'var(--accent)':'none'}" stroke="${liked?'var(--accent)':'currentColor'}" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       ${liked?'Unlike':'Like song'}
     </div>
-    <div class="sheet-item" onclick="openAddToPlaylist(${JSON.stringify(song).replace(/"/g,'&quot;')});closeModal('song-sheet')">
+    <div class="sheet-item" ontouchstart="" onclick="openAddToPlaylist(window._store['${key}'].song);closeModal('song-sheet')">
       <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add to playlist
     </div>
@@ -743,12 +731,13 @@ function renderHome(){
     ${likedSongs.length?`
     <div class="section">
       <div class="section-head"><div class="section-title">Liked Songs</div><div class="section-more" onclick="showPage('liked')">${likedSongs.length} songs →</div></div>
-      <div class="hscroll">${likedSongs.slice(0,10).map((s,i)=>`
-        <div class="h-card" onclick='playSong(${JSON.stringify(s)},${JSON.stringify(likedSongs)},${i})'>
+      <div class="hscroll">${likedSongs.slice(0,10).map((s,i)=>{
+        const k=_save(s,likedSongs);
+        return `<div class="h-card" ontouchstart="" onclick="_play('${k}',${i})">
           <img class="h-thumb" src="${s.thumb}" loading="lazy"/>
           <div class="h-title">${s.title}</div>
           <div class="h-artist">${s.artist}</div>
-        </div>`).join('')}
+        </div>`;}).join('')}
       </div>
     </div>`:''}
     ${recent.length?`
@@ -794,7 +783,7 @@ function renderLiked(){
       <div style="font-size:48px;margin-bottom:8px">♥</div>
       <div class="page-title">Liked Songs</div>
       <div class="page-subtitle">${likedSongs.length} song${likedSongs.length!==1?'s':''}</div>
-      ${likedSongs.length?`<div style="margin-top:16px"><button class="btn btn-primary" onclick='playSong(${JSON.stringify(likedSongs[0])},${JSON.stringify(likedSongs)},0)'>▶ Play All</button></div>`:''}
+      ${likedSongs.length?`<div style="margin-top:16px"><button class="btn btn-primary" onclick="_play(_save(likedSongs[0],likedSongs),0)">▶ Play All</button></div>`:''}
     </div>
     ${likedSongs.length?renderSongList(likedSongs,likedSongs):'<div class="empty-state"><p>Songs you like appear here</p></div>'}
   `;
@@ -807,12 +796,12 @@ function renderLibrary(){
       <div class="page-title">Library</div>
     </div>
     <div class="pl-grid">
-      <div class="pl-add-card" onclick="openNewPlaylist()">
+      <div class="pl-add-card" ontouchstart="" onclick="openNewPlaylist()">
         <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span>New Playlist</span>
       </div>
       ${playlists.map(p=>`
-        <div class="pl-card" onclick="showPage('playlist',${p.id})">
+        <div class="pl-card" ontouchstart="" onclick="showPage('playlist',${p.id})">
           <div class="pl-emoji">${p.emoji}</div>
           <div class="pl-name">${p.name}</div>
           <div class="pl-count">${p.songs.length} song${p.songs.length!==1?'s':''}</div>
@@ -835,7 +824,7 @@ function renderPlaylistView(pid){
       <div class="pl-view-name">${pl.name}</div>
       <div class="pl-view-meta">${pl.songs.length} song${pl.songs.length!==1?'s':''}</div>
       <div class="pl-view-actions">
-        ${pl.songs.length?`<button class="btn btn-primary" onclick='playSong(${JSON.stringify(pl.songs[0])},${JSON.stringify(pl.songs)},0)'>▶ Play All</button>`:''}
+        ${pl.songs.length?`<button class="btn btn-primary" onclick="_play(_save(pl.songs[0],pl.songs),0)">▶ Play All</button>`:''}
         <button class="btn btn-ghost" onclick="deletePlaylist(${pid})">Delete</button>
       </div>
     </div>
@@ -843,13 +832,32 @@ function renderPlaylistView(pid){
   `;
 }
 
+// Safe song store — avoids JSON in HTML attributes breaking on apostrophes
+window._store = {};
+function _save(song, queue) {
+  const key = 'song_' + song.id;
+  window._store[key] = { song, queue };
+  return key;
+}
+function _play(key, idx) {
+  const d = window._store[key];
+  if (d) playSong(d.song, d.queue, idx);
+}
+function _like(key) {
+  const d = window._store[key];
+  if (d) toggleLike(d.song);
+}
+function _sheet(key) {
+  const d = window._store[key];
+  if (d) openSongSheet(d.song);
+}
+
 function renderSongList(songs, fullQ){
-  const pid = currentPage==='playlist'?activePlaylistId:null;
   return '<div class="song-list">'+songs.map((song,i)=>{
     const playing=currentQueue[currentSongIndex]?.id===song.id;
     const liked=isLiked(song.id);
-    const sj=JSON.stringify(song).replace(/"/g,'&quot;');
-    return `<div class="song-card ${playing?'playing':''}" onclick='playSong(${JSON.stringify(song)},${JSON.stringify(fullQ)},${i})'>
+    const key=_save(song, fullQ);
+    return `<div class="song-card ${playing?'playing':''}" onclick="_play('${key}',${i})" ontouchstart="">
       <img class="sc-thumb" src="${song.thumb}" loading="lazy" onerror="this.style.visibility='hidden'"/>
       <div class="sc-info">
         <div class="sc-title">${song.title}</div>
@@ -857,10 +865,10 @@ function renderSongList(songs, fullQ){
       </div>
       <div class="sc-actions">
         ${playing&&isPlaying?'<div class="sc-eq"><div class="sc-eq-bar"></div><div class="sc-eq-bar"></div><div class="sc-eq-bar"></div></div>':''}
-        <button class="sc-btn ${liked?'liked':''}" onclick="event.stopPropagation();toggleLike(${JSON.stringify(song).replace(/"/g,'&quot;')})">
+        <button class="sc-btn ${liked?'liked':''}" onclick="event.stopPropagation();_like('${key}')">
           <svg width="18" height="18" fill="${liked?'currentColor':'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
-        <button class="sc-btn" onclick="event.stopPropagation();openSongSheet(${JSON.stringify(song).replace(/"/g,'&quot;')})">
+        <button class="sc-btn" onclick="event.stopPropagation();_sheet('${key}')">
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
         </button>
       </div>

@@ -416,20 +416,35 @@ function renderLiked() {
 var recs = [];
 var recsLoaded = false;
 
-function fetchRecs() {
-  if (!playHistory.length) return;
-  // Use the most recently played song to seed recommendations
-  var seed = playHistory[0];
-  var artist = seed.artist.replace(/ - Topic$/, '').replace(/VEVO$/, '').trim();
-  var q = encodeURIComponent(artist + ' songs');
+// Recs are built from search results — no extra API quota needed
+function updateRecs() {
+  if (!searchResults.length || !curSong) return;
+  var seen = {};
+  playHistory.forEach(function(s) { seen[s.id] = true; });
+  liked.forEach(function(s) { seen[s.id] = true; });
+  recs = searchResults
+    .filter(function(s) { return !seen[s.id]; })
+    .slice(0, 10);
+  recsLoaded = true;
+  if (curPage === 'home') renderHome();
+}
 
-  fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=12&q=' + q + '&key=' + YT_KEY)
+function fetchRecs() {
+  // If we already have search results use them
+  if (searchResults.length) { updateRecs(); return; }
+  if (!playHistory.length) return;
+  // Otherwise do one search based on last played artist
+  var seed = playHistory[0];
+  var artist = seed.artist.replace(/ - Topic$/, '').replace(/VEVO$/i, '').trim();
+  var q = encodeURIComponent(artist + ' songs');
+  fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=15&q=' + q + '&key=' + YT_KEY)
     .then(function(r) { return r.json(); })
     .then(function(j) {
+      if (!j.items) { recsLoaded = true; renderHome(); return; }
       var seen = {};
       playHistory.forEach(function(s) { seen[s.id] = true; });
       liked.forEach(function(s) { seen[s.id] = true; });
-      recs = (j.items || [])
+      recs = j.items
         .filter(function(i) { return i.id && i.id.videoId && !seen[i.id.videoId]; })
         .map(function(i) {
           return {
@@ -442,7 +457,7 @@ function fetchRecs() {
       recsLoaded = true;
       renderHome();
     })
-    .catch(function() {});
+    .catch(function() { recsLoaded = true; renderHome(); });
 }
 
 function renderHome() {
@@ -585,6 +600,7 @@ function doSearch(q) {
       });
       setStatus(searchResults.length ? 'hidden' : 'empty');
       renderResults();
+      if (curSong) updateRecs();
     })
     .catch(function() { setStatus('empty'); });
 }

@@ -584,6 +584,7 @@ if (!isNaN(idx) && searchResults[idx]) playSong(searchResults[idx], searchResult
 });
 
 function fetchAlbumArt(song) {
+try {
 var artist = song.artist.replace(/ - Topic$/i,’’).replace(/VEVO$/i,’’).replace(/official$/i,’’).trim();
 var title = song.title.replace(/(Official[^)]*)/gi,’’).replace(/[Official[^)]*]/gi,’’).replace(/(Audio[^)]*)/gi,’’).replace(/(Lyric[^)]*)/gi,’’).replace(/(Live[^)]*)/gi,’’).trim();
 var q = encodeURIComponent(title + ’ ’ + artist);
@@ -614,6 +615,7 @@ art = art.replace(‘100x100bb’, ‘100000x100000-999’);
 setNPArt(art);
 })
 .catch(function() {});
+} catch(e) {}
 }
 
 function setNPArt(src) {

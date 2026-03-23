@@ -912,8 +912,10 @@ function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function openNewPlaylist(){ document.getElementById('pl-name-input').value=''; openModal('new-playlist-modal'); setTimeout(()=>document.getElementById('pl-name-input').focus(),300); }
 
-document.querySelectorAll('.modal-overlay').forEach(el=>{
-  el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
+window.addEventListener('load',function(){
+  document.querySelectorAll('.modal-overlay').forEach(function(el){
+    el.addEventListener('click',function(e){ if(e.target===el) el.classList.remove('open'); });
+  });
 });
 
 // ============================================================
@@ -934,7 +936,11 @@ document.addEventListener('keydown',e=>{
 // ============================================================
 // INIT
 // ============================================================
-renderCurrentPage();
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',function(){renderCurrentPage();});
+}else{
+  renderCurrentPage();
+}
 </script>
 
 </body>

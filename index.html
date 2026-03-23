@@ -93,7 +93,9 @@ display:flex; flex-direction:column;
 transform:translateY(100%);
 transition:transform 0.4s cubic-bezier(0.32,0.72,0,1);
 padding-top:env(safe-area-inset-top, 20px);
-overflow:hidden;
+overflow-y:auto;
+overflow-x:hidden;
+-webkit-overflow-scrolling:touch;
 }
 .now-playing-overlay.open { transform:translateY(0); }
 .np-handle { width:36px; height:4px; background:var(–border); border-radius:2px; margin:8px auto 20px; }
@@ -466,7 +468,6 @@ function playSong(song, qList, idx) {
   currentQueue = [song];
   currentSongIndex = 0;
   updateNowPlayingUI(song);
-  openNowPlaying();
   playHistory = [song, ...playHistory.filter(s=>s.id!==song.id)].slice(0,30);
   localStorage.setItem("chopify_history", JSON.stringify(playHistory));
   if(ytReady) ytPlayer.loadVideoById(song.id);

@@ -620,7 +620,7 @@ if (!isNaN(idx) && searchResults[idx]) playSong(searchResults[idx], searchResult
 function fetchAlbumArt(song) {
 try {
 var artist = song.artist.replace(/ - Topic$/i,'').replace(/VEVO$/i,'').replace(/official$/i,'').trim();
-var title = song.title.replace(/(Official[^)]*)/gi,'').replace(/[Official[^)]*]/gi,'').replace(/(Audio[^)]*)/gi,'').replace(/(Lyric[^)]*)/gi,'').replace(/(Live[^)]*)/gi,'').trim();
+var title = song.title.replace(/\(.*?\)/g,'').replace(/\[.*?\]/g,'').replace(/-.*$/,'').trim();
 var q = encodeURIComponent(title + ' ' + artist);
 console.log('Chopify: fetching album art for', title);
 fetch('/api/itunes?q=' + q)

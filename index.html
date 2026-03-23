@@ -649,6 +649,7 @@ best = j.results[i]; break;
 }
 }
 var art = best.artworkUrl100;
+console.log('Chopify: art url', art);
 if (!art) return;
 art = art.replace('100x100bb', '100000x100000-999');
 setNPArt(art);

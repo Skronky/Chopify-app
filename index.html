@@ -881,10 +881,14 @@ function closeNowPlaying(){ document.getElementById('now-playing').classList.rem
 
 // Swipe down to close now playing
 let npTouchY=0;
-const npEl=document.getElementById('now-playing');
-npEl.addEventListener('touchstart',e=>{ npTouchY=e.touches[0].clientY; });
-npEl.addEventListener('touchend',e=>{
-  if(e.changedTouches[0].clientY - npTouchY > 80) closeNowPlaying();
+document.addEventListener('DOMContentLoaded', () => {
+  const npEl=document.getElementById('now-playing');
+  if(npEl) {
+    npEl.addEventListener('touchstart',e=>{ npTouchY=e.touches[0].clientY; },{passive:true});
+    npEl.addEventListener('touchend',e=>{
+      if(e.changedTouches[0].clientY - npTouchY > 80) closeNowPlaying();
+    },{passive:true});
+  }
 });
 
 // ============================================================

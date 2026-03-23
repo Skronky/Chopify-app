@@ -569,15 +569,33 @@ var iframe = document.getElementById('yt-player');
 if (!iframe) return;
 var video = iframe.querySelector('video');
 if (!video) {
-// YouTube iframe loads video element async, retry
 setTimeout(tryPiP, 1000);
 return;
 }
-if (document.pictureInPictureEnabled && video.readyState >= 1) {
+if (document.pictureInPictureElement) {
+document.exitPictureInPicture().then(function() {
+requestPiP(video);
+}).catch(function() {
+requestPiP(video);
+});
+} else {
+requestPiP(video);
+}
+}
+
+function requestPiP(video) {
+if (!document.pictureInPictureEnabled) return;
+if (video.readyState >= 1) {
 video.requestPictureInPicture().then(function() {
 console.log('Chopify: PiP activated');
 }).catch(function(err) {
 console.warn('Chopify: PiP failed', err);
+setTimeout(function() { tryPiP(); }, 1000);
+});
+} else {
+video.addEventListener('loadedmetadata', function onLoaded() {
+video.removeEventListener('loadedmetadata', onLoaded);
+requestPiP(video);
 });
 }
 }

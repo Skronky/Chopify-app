@@ -8,11 +8,8 @@ module.exports = async function handler(req, res) {
 
   try {
     const info = await play.video_info('https://www.youtube.com/watch?v=' + id);
-    const formats = info.format.filter(f => f.mimeType && f.mimeType.includes('audio'));
-    formats.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
-    const best = formats[0];
-    if (!best) return res.status(404).json({ error: 'No audio format found' });
-    res.json({ url: best.url });
+    console.log('formats:', JSON.stringify(info.format).slice(0, 500));
+    res.json({ debug: JSON.stringify(info.format).slice(0, 500) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

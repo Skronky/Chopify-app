@@ -185,7 +185,7 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
 <div id="app">
   <div id="page">
 
-
+```
 <!-- HOME PAGE -->
 <div class="pg active" id="pg-home">
   <div id="home-header">
@@ -251,7 +251,7 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
     <p>Search for a song to get started</p>
   </div>
 </div>
-
+```
 
   </div>
 </div>
@@ -413,6 +413,36 @@ function renderLiked() {
   };
 }
 
+var recs = [];
+var recsLoaded = false;
+
+function fetchRecs() {
+  if (!playHistory.length) return;
+  // Use the most recently played song to seed recommendations
+  var seed = playHistory[0];
+  var q = encodeURIComponent(seed.artist + ' ' + seed.title + ' mix');
+  fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=12&q=' + q + '&key=' + YT_KEY)
+    .then(function(r) { return r.json(); })
+    .then(function(j) {
+      var seen = {};
+      playHistory.forEach(function(s) { seen[s.id] = true; });
+      liked.forEach(function(s) { seen[s.id] = true; });
+      recs = (j.items || [])
+        .filter(function(i) { return i.id && i.id.videoId && !seen[i.id.videoId]; })
+        .map(function(i) {
+          return {
+            id: i.id.videoId,
+            title: i.snippet.title,
+            artist: i.snippet.channelTitle,
+            thumb: (i.snippet.thumbnails.medium || {}).url || 'https://img.youtube.com/vi/' + i.id.videoId + '/mqdefault.jpg'
+          };
+        }).slice(0, 10);
+      recsLoaded = true;
+      renderHome();
+    })
+    .catch(function() {});
+}
+
 function renderHome() {
   var h = new Date().getHours();
   var greet = h < 12 ? 'GOOD MORNING' : h < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
@@ -435,6 +465,27 @@ function renderHome() {
     html += '</div></div>';
   }
 
+  // Recommendations
+  if (recs.length) {
+    html += '<div class="sec"><div class="sec-head"><div class="sec-title">Recommended</div>'
+      + '<button id="refresh-recs-btn" style="background:none;border:none;color:#555;cursor:pointer;padding:4px;display:flex;">'
+      + '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>'
+      + '</button></div>';
+    html += '<div class="hscroll">';
+    for (var r = 0; r < recs.length; r++) {
+      var rc = recs[r];
+      html += '<div class="hcard" data-rec-idx="' + r + '">'
+        + '<img src="' + rc.thumb + '" loading="lazy"/>'
+        + '<div class="hcard-title">' + esc(rc.title) + '</div>'
+        + '<div class="hcard-artist">' + esc(rc.artist) + '</div>'
+        + '</div>';
+    }
+    html += '</div></div>';
+  } else if (playHistory.length && !recsLoaded) {
+    html += '<div class="sec"><div class="sec-head"><div class="sec-title">Recommended</div></div>'
+      + '<div style="padding:0 16px 8px;color:#555;font-size:13px;">Loading...</div></div>';
+  }
+
   if (liked.length) {
     html += '<div class="sec"><div class="sec-head"><div class="sec-title">Liked Songs</div></div>';
     html += '<div class="hscroll">';
@@ -455,16 +506,31 @@ function renderHome() {
 
   el.innerHTML = html;
 
-  // Event delegation for home cards
+  // Refresh recs button
+  var refreshBtn = document.getElementById('refresh-recs-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      recs = [];
+      recsLoaded = false;
+      renderHome();
+      fetchRecs();
+    });
+  }
+
+  // Event delegation for all home cards
   el.onclick = function(e) {
     var hcard = e.target.closest('.hcard');
     if (!hcard) return;
     if (hcard.hasAttribute('data-hist-idx')) {
       var idx = parseInt(hcard.getAttribute('data-hist-idx'), 10);
       playSong(playHistory[idx], playHistory, idx);
+    } else if (hcard.hasAttribute('data-rec-idx')) {
+      var idx2 = parseInt(hcard.getAttribute('data-rec-idx'), 10);
+      playSong(recs[idx2], recs, idx2);
     } else if (hcard.hasAttribute('data-liked-idx')) {
-      var idx2 = parseInt(hcard.getAttribute('data-liked-idx'), 10);
-      playSong(liked[idx2], liked, idx2);
+      var idx3 = parseInt(hcard.getAttribute('data-liked-idx'), 10);
+      playSong(liked[idx3], liked, idx3);
     }
   };
 }
@@ -587,8 +653,11 @@ function playSong(song, q, idx) {
   }
 
   // Track history
+  var isFirst = playHistory.length === 0;
   playHistory = [song].concat(playHistory.filter(function(s) { return s.id !== song.id; })).slice(0, 30);
   localStorage.setItem('ch_hist', JSON.stringify(playHistory));
+  // Fetch recs on first play or refresh every 5 songs
+  if (isFirst || playHistory.length % 5 === 0) { recs = []; recsLoaded = false; fetchRecs(); }
 
   if (ytOk) yt.loadVideoById(song.id);
 }

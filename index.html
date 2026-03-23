@@ -462,10 +462,10 @@ async function searchYouTube(q) {
 // PLAYBACK
 // ============================================================
 function playSong(song, qList, idx) {
-  // Always use just the song so autoplay fetches related, not search results
   currentQueue = [song];
   currentSongIndex = 0;
   updateNowPlayingUI(song);
+  openNowPlaying();
   playHistory = [song, ...playHistory.filter(s=>s.id!==song.id)].slice(0,30);
   localStorage.setItem("chopify_history", JSON.stringify(playHistory));
   if(ytReady) ytPlayer.loadVideoById(song.id);

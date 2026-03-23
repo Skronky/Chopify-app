@@ -8,6 +8,15 @@
 <meta name="theme-color" content="#0a0a0a"/>
 <title>Chopify</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+<!-- ===== DEBUG TOOLS: REMOVE BEFORE PRODUCTION ===== -->
+
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+
+<script>eruda.init();</script>
+
+<!-- ===== END DEBUG TOOLS ===== -->
+
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html, body { height:100%; font-family:'Outfit',sans-serif; background:#0a0a0a; color:#fff; overflow:hidden; -webkit-font-smoothing:antialiased; }
@@ -167,6 +176,7 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
 .home-empty { display:flex; flex-direction:column; align-items:center; padding:60px 20px; gap:12px; color:#555; text-align:center; }
 .home-empty p { font-size:14px; }
 </style>
+
 </head>
 <body>
 <div id="app">
@@ -316,8 +326,35 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
 </div>
 <div id="yt-player"></div>
 <script>
-var YT_KEY = 'AIzaSyCk_AuxfMGwuPxsrp7K-UV7nH6D76EZn9M';
-var liked = JSON.parse(localStorage.getItem('ch_liked') || '[]');
+// ===== DEBUG: REMOVE BEFORE PRODUCTION =====
+window.onerror = function(msg, src, line, col, err) {
+  console.error('CHOPIFY ERROR:', msg, 'Line:', line, 'Col:', col);
+  var box = document.getElementById('debug-error-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'debug-error-box';
+    box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#c0392b;color:#fff;padding:12px 16px;font-size:13px;font-family:monospace;word-break:break-all;';
+    document.body.appendChild(box);
+  }
+  box.innerHTML = '<strong>JS ERROR (line ' + line + '):</strong><br>' + msg;
+  return false;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('CHOPIFY UNHANDLED PROMISE:', e.reason);
+  var box = document.getElementById('debug-error-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'debug-error-box';
+    box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#c0392b;color:#fff;padding:12px 16px;font-size:13px;font-family:monospace;word-break:break-all;';
+    document.body.appendChild(box);
+  }
+  box.innerHTML = '<strong>PROMISE ERROR:</strong><br>' + (e.reason && e.reason.message ? e.reason.message : String(e.reason));
+});
+console.log('Chopify: script starting...');
+// ===== END DEBUG =====
+
+var YT_KEY = ‘AIzaSyCk_AuxfMGwuPxsrp7K-UV7nH6D76EZn9M’;
+var liked = JSON.parse(localStorage.getItem(‘ch_liked’) || ‘[]’);
 var queue = [];
 var qIdx = -1;
 var curSong = null;
@@ -354,30 +391,31 @@ var html = ‘’;
 for (var i = 0; i < liked.length; i++) {
 var s = liked[i];
 html += ‘<div class="row" data-liked-play="' + i + '">’
-+ ‘<img src="' + s.thumb + '" loading="lazy"/>’
-+ ‘<div class="row-info">’
-+ ‘<div class="row-title' + (curSong && curSong.id === s.id ? ' playing' : '') + '">’ + esc(s.title) + ‘</div>’
-+ ‘<div class="row-artist">’ + esc(s.artist) + ‘</div>’
-+ ‘</div>’
-+ ‘<button class="like-btn liked" data-liked-id="' + s.id + '">’ + heartFull() + ‘</button>’
-+ ‘</div>’;
-}
-el.innerHTML = html;
-el.onclick = function(e) {
-var unlikeBtn = e.target.closest(’.like-btn’);
-if (unlikeBtn) {
-var id = unlikeBtn.getAttribute(‘data-liked-id’);
-var song = liked.find(function(s) { return s.id === id; });
-if (song) { toggleLike(song); renderLiked(); }
-return;
-}
-var row = e.target.closest(’.row’);
-if (row && row.hasAttribute(‘data-liked-play’)) {
-var idx = parseInt(row.getAttribute(‘data-liked-play’), 10);
-playSong(liked[idx], liked, idx);
-}
-};
-}
+
+- ‘<img src="' + s.thumb + '" loading="lazy"/>’
+- ‘<div class="row-info">’
+- ‘<div class="row-title' + (curSong && curSong.id === s.id ? ' playing' : '') + '">’ + esc(s.title) + ‘</div>’
+- ‘<div class="row-artist">’ + esc(s.artist) + ‘</div>’
+- ‘</div>’
+- ‘<button class="like-btn liked" data-liked-id="' + s.id + '">’ + heartFull() + ‘</button>’
+- ‘</div>’;
+  }
+  el.innerHTML = html;
+  el.onclick = function(e) {
+  var unlikeBtn = e.target.closest(’.like-btn’);
+  if (unlikeBtn) {
+  var id = unlikeBtn.getAttribute(‘data-liked-id’);
+  var song = liked.find(function(s) { return s.id === id; });
+  if (song) { toggleLike(song); renderLiked(); }
+  return;
+  }
+  var row = e.target.closest(’.row’);
+  if (row && row.hasAttribute(‘data-liked-play’)) {
+  var idx = parseInt(row.getAttribute(‘data-liked-play’), 10);
+  playSong(liked[idx], liked, idx);
+  }
+  };
+  }
 
 var recs = [];
 var recsLoaded = false;
@@ -440,68 +478,70 @@ html += ‘<div class="hscroll">’;
 for (var i = 0; i < Math.min(playHistory.length, 10); i++) {
 var s = playHistory[i];
 html += ‘<div class="hcard" data-hist-idx="' + i + '">’
-+ ‘<img src="' + s.thumb + '" loading="lazy"/>’
-+ ‘<div class="hcard-title">’ + esc(s.title) + ‘</div>’
-+ ‘<div class="hcard-artist">’ + esc(s.artist) + ‘</div>’
-+ ‘</div>’;
-}
-html += ‘</div></div>’;
-}
-if (recs.length) {
-html += ‘<div class="sec"><div class="sec-head"><div class="sec-title">Recommended</div></div>’;
-html += ‘<div class="hscroll">’;
-for (var r = 0; r < recs.length; r++) {
-var rc = recs[r];
-html += ‘<div class="hcard" data-rec-idx="' + r + '">’
-+ ‘<img src="' + rc.thumb + '" loading="lazy"/>’
-+ ‘<div class="hcard-title">’ + esc(rc.title) + ‘</div>’
-+ ‘<div class="hcard-artist">’ + esc(rc.artist) + ‘</div>’
-+ ‘</div>’;
-}
-html += ‘</div></div>’;
-} else if (playHistory.length && !recsLoaded) {
-html += ‘<div class="sec"><div class="sec-head"><div class="sec-title">Recommended</div></div>’
-+ ‘<div style="padding:0 16px 8px;color:#555;font-size:13px;">Loading…</div></div>’;
-}
-if (liked.length) {
-html += ‘<div class="sec"><div class="sec-head"><div class="sec-title">Liked Songs</div></div>’;
-html += ‘<div class="hscroll">’;
-for (var j = 0; j < Math.min(liked.length, 10); j++) {
-var ls = liked[j];
-html += ‘<div class="hcard" data-liked-idx="' + j + '">’
-+ ‘<img src="' + ls.thumb + '" loading="lazy"/>’
-+ ‘<div class="hcard-title">’ + esc(ls.title) + ‘</div>’
-+ ‘<div class="hcard-artist">’ + esc(ls.artist) + ‘</div>’
-+ ‘</div>’;
-}
-html += ‘</div></div>’;
-}
-if (!playHistory.length && !liked.length) {
-html = ‘<div class="home-empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><p>Search for songs to get started</p></div>’;
-}
-el.innerHTML = html;
-el.onclick = function(e) {
-var hcard = e.target.closest(’.hcard’);
-if (!hcard) return;
-if (hcard.hasAttribute(‘data-hist-idx’)) {
-var idx = parseInt(hcard.getAttribute(‘data-hist-idx’), 10);
-playSong(playHistory[idx], playHistory, idx);
-} else if (hcard.hasAttribute(‘data-rec-idx’)) {
-var idx2 = parseInt(hcard.getAttribute(‘data-rec-idx’), 10);
-playSong(recs[idx2], recs, idx2);
-} else if (hcard.hasAttribute(‘data-liked-idx’)) {
-var idx3 = parseInt(hcard.getAttribute(‘data-liked-idx’), 10);
-playSong(liked[idx3], liked, idx3);
-}
-};
-}
+
+- ‘<img src="' + s.thumb + '" loading="lazy"/>’
+- ‘<div class="hcard-title">’ + esc(s.title) + ‘</div>’
+- ‘<div class="hcard-artist">’ + esc(s.artist) + ‘</div>’
+- ‘</div>’;
+  }
+  html += ‘</div></div>’;
+  }
+  if (recs.length) {
+  html += ‘<div class="sec"><div class="sec-head"><div class="sec-title">Recommended</div></div>’;
+  html += ‘<div class="hscroll">’;
+  for (var r = 0; r < recs.length; r++) {
+  var rc = recs[r];
+  html += ‘<div class="hcard" data-rec-idx="' + r + '">’
+- ‘<img src="' + rc.thumb + '" loading="lazy"/>’
+- ‘<div class="hcard-title">’ + esc(rc.title) + ‘</div>’
+- ‘<div class="hcard-artist">’ + esc(rc.artist) + ‘</div>’
+- ‘</div>’;
+  }
+  html += ‘</div></div>’;
+  } else if (playHistory.length && !recsLoaded) {
+  html += ‘<div class="sec"><div class="sec-head"><div class="sec-title">Recommended</div></div>’
+- ‘<div style="padding:0 16px 8px;color:#555;font-size:13px;">Loading…</div></div>’;
+  }
+  if (liked.length) {
+  html += ‘<div class="sec"><div class="sec-head"><div class="sec-title">Liked Songs</div></div>’;
+  html += ‘<div class="hscroll">’;
+  for (var j = 0; j < Math.min(liked.length, 10); j++) {
+  var ls = liked[j];
+  html += ‘<div class="hcard" data-liked-idx="' + j + '">’
+- ‘<img src="' + ls.thumb + '" loading="lazy"/>’
+- ‘<div class="hcard-title">’ + esc(ls.title) + ‘</div>’
+- ‘<div class="hcard-artist">’ + esc(ls.artist) + ‘</div>’
+- ‘</div>’;
+  }
+  html += ‘</div></div>’;
+  }
+  if (!playHistory.length && !liked.length) {
+  html = ‘<div class="home-empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><p>Search for songs to get started</p></div>’;
+  }
+  el.innerHTML = html;
+  el.onclick = function(e) {
+  var hcard = e.target.closest(’.hcard’);
+  if (!hcard) return;
+  if (hcard.hasAttribute(‘data-hist-idx’)) {
+  var idx = parseInt(hcard.getAttribute(‘data-hist-idx’), 10);
+  playSong(playHistory[idx], playHistory, idx);
+  } else if (hcard.hasAttribute(‘data-rec-idx’)) {
+  var idx2 = parseInt(hcard.getAttribute(‘data-rec-idx’), 10);
+  playSong(recs[idx2], recs, idx2);
+  } else if (hcard.hasAttribute(‘data-liked-idx’)) {
+  var idx3 = parseInt(hcard.getAttribute(‘data-liked-idx’), 10);
+  playSong(liked[idx3], liked, idx3);
+  }
+  };
+  }
 
 function onYouTubeIframeAPIReady() {
+console.log(‘Chopify: YouTube API ready’);
 yt = new YT.Player(‘yt-player’, {
 height: ‘1’, width: ‘1’,
 playerVars: { autoplay: 0, controls: 0, playsinline: 1 },
 events: {
-onReady: function() { ytOk = true; yt.setVolume(100); },
+onReady: function() { ytOk = true; yt.setVolume(100); console.log(‘Chopify: YT player ready’); },
 onStateChange: function(e) {
 if (e.data === YT.PlayerState.PLAYING) { setIcons(true); startProg(); }
 else if (e.data === YT.PlayerState.PAUSED) { setIcons(false); stopProg(); }
@@ -555,18 +595,19 @@ var s = searchResults[i];
 var l = isLiked(s.id);
 var p = curSong && curSong.id === s.id;
 html += ‘<div class="row" data-idx="' + i + '">’
-+ ‘<img src="' + s.thumb + '" loading="lazy"/>’
-+ ‘<div class="row-info">’
-+ ‘<div class="row-title' + (p ? ' playing' : '') + '">’ + esc(s.title) + ‘</div>’
-+ ‘<div class="row-artist">’ + esc(s.artist) + ‘</div>’
-+ ‘</div>’
-+ ‘<button class="like-btn' + (l ? ' liked' : '') + '" data-song-id="' + s.id + '">’
-+ (l ? heartFull() : heartEmpty())
-+ ‘</button>’
-+ ‘</div>’;
-}
-el.innerHTML = html;
-}
+
+- ‘<img src="' + s.thumb + '" loading="lazy"/>’
+- ‘<div class="row-info">’
+- ‘<div class="row-title' + (p ? ' playing' : '') + '">’ + esc(s.title) + ‘</div>’
+- ‘<div class="row-artist">’ + esc(s.artist) + ‘</div>’
+- ‘</div>’
+- ‘<button class="like-btn' + (l ? ' liked' : '') + '" data-song-id="' + s.id + '">’
+- (l ? heartFull() : heartEmpty())
+- ‘</button>’
+- ‘</div>’;
+  }
+  el.innerHTML = html;
+  }
 
 document.getElementById(‘results’).addEventListener(‘click’, function(e) {
 var likeBtn = e.target.closest(’.like-btn’);
@@ -588,8 +629,12 @@ try {
 var artist = song.artist.replace(/ - Topic$/i,’’).replace(/VEVO$/i,’’).replace(/official$/i,’’).trim();
 var title = song.title.replace(/(Official[^)]*)/gi,’’).replace(/[Official[^)]*]/gi,’’).replace(/(Audio[^)]*)/gi,’’).replace(/(Lyric[^)]*)/gi,’’).replace(/(Live[^)]*)/gi,’’).trim();
 var q = encodeURIComponent(title + ’ ’ + artist);
+console.log(‘Chopify: fetching album art for’, title);
 fetch(’/api/itunes?q=’ + q)
-.then(function(r) { return r.json(); })
+.then(function(r) {
+console.log(‘Chopify: iTunes response status’, r.status);
+return r.json();
+})
 .then(function(j) {
 if (!j.results || !j.results.length) {
 var titleOnly = encodeURIComponent(title);
@@ -614,8 +659,8 @@ if (!art) return;
 art = art.replace(‘100x100bb’, ‘100000x100000-999’);
 setNPArt(art);
 })
-.catch(function() {});
-} catch(e) {}
+.catch(function(err) { console.error(‘Chopify: iTunes fetch error’, err); });
+} catch(e) { console.error(‘Chopify: fetchAlbumArt exception’, e); }
 }
 
 function setNPArt(src) {
@@ -797,140 +842,150 @@ for (var i = 0; i < playlists.length; i++) {
 var pl = playlists[i];
 var urls = plArtUrls(pl);
 html += ‘<div class="pl-card" data-pl-id="' + pl.id + '">’
-+ plArtHTML(urls, ‘pl-card-art’)
-+ ‘<div class="pl-card-name">’ + esc(pl.name) + ‘</div>’
-+ ‘<div class="pl-card-count">’ + pl.songs.length + ’ song’ + (pl.songs.length !== 1 ? ‘s’ : ‘’) + ‘</div>’
-+ ‘</div>’;
-}
-grid.innerHTML = html;
-grid.onclick = function(e) {
-var card = e.target.closest(’.pl-card’);
-if (card) openPlaylistView(parseInt(card.getAttribute(‘data-pl-id’), 10));
-};
-}
-function openPlaylistView(pid) {
-activePlId = pid;
-var pl = playlists.find(function(p) { return p.id === pid; });
-if (!pl) return;
-var urls = plArtUrls(pl);
-document.getElementById(‘plv-art’).outerHTML = plArtHTML(urls, ‘pl-card-art’).replace(‘pl-card-art’, ‘pl-card-art” id=“plv-art’);
-document.getElementById(‘plv-name’).textContent = pl.name;
-document.getElementById(‘plv-meta’).textContent = pl.songs.length + ’ song’ + (pl.songs.length !== 1 ? ‘s’ : ‘’);
-renderPlvList(pl);
-document.querySelectorAll(’.pg’).forEach(function(el) { el.classList.remove(‘active’); });
-document.getElementById(‘pg-plview’).classList.add(‘active’);
-}
-function renderPlvList(pl) {
-var el = document.getElementById(‘plv-list’);
-if (!pl.songs.length) {
-el.innerHTML = ‘<div class="home-empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><p>Add songs from Search</p></div>’;
-return;
-}
-var html = ‘’;
-for (var i = 0; i < pl.songs.length; i++) {
-var s = pl.songs[i];
-html += ‘<div class="row" data-plv-idx="' + i + '">’
-+ ‘<img src="' + s.thumb + '" loading="lazy"/>’
-+ ‘<div class="row-info">’
-+ ‘<div class="row-title' + (curSong && curSong.id === s.id ? ' playing' : '') + '">’ + esc(s.title) + ‘</div>’
-+ ‘<div class="row-artist">’ + esc(s.artist) + ‘</div>’
-+ ‘</div>’
-+ ‘<button class="like-btn" data-remove-id="' + s.id + '" style="color:#e74c3c">’
-+ ‘<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>’
-+ ‘</button>’
-+ ‘</div>’;
-}
-el.innerHTML = html;
-el.onclick = function(e) {
-var removeBtn = e.target.closest(’[data-remove-id]’);
-if (removeBtn) {
-var id = removeBtn.getAttribute(‘data-remove-id’);
-var pl2 = playlists.find(function(p) { return p.id === activePlId; });
-if (pl2) { pl2.songs = pl2.songs.filter(function(s) { return s.id !== id; }); savePls(); openPlaylistView(activePlId); }
-return;
-}
-var row = e.target.closest(’.row’);
-if (row) {
-var idx = parseInt(row.getAttribute(‘data-plv-idx’), 10);
-var pl3 = playlists.find(function(p) { return p.id === activePlId; });
-if (pl3) playSong(pl3.songs[idx], pl3.songs, idx);
-}
-};
-}
-document.getElementById(‘new-pl-btn’).addEventListener(‘click’, function() {
-document.getElementById(‘pl-name-input’).value = ‘’;
-document.getElementById(‘pl-modal-overlay’).classList.add(‘open’);
-setTimeout(function() { document.getElementById(‘pl-name-input’).focus(); }, 300);
-});
-document.getElementById(‘pl-modal-cancel’).addEventListener(‘click’, function() {
-document.getElementById(‘pl-modal-overlay’).classList.remove(‘open’);
-});
-document.getElementById(‘pl-modal-overlay’).addEventListener(‘click’, function(e) {
-if (e.target === this) this.classList.remove(‘open’);
-});
-document.getElementById(‘pl-modal-create’).addEventListener(‘click’, function() {
-var name = document.getElementById(‘pl-name-input’).value.trim();
-if (!name) return;
-playlists.push({ id: Date.now(), name: name, songs: [] });
-savePls();
-document.getElementById(‘pl-modal-overlay’).classList.remove(‘open’);
-renderLibrary();
-});
-document.getElementById(‘plv-back’).addEventListener(‘click’, function() { showPage(‘library’); });
-document.getElementById(‘plv-play-btn’).addEventListener(‘click’, function() {
-var pl = playlists.find(function(p) { return p.id === activePlId; });
-if (pl && pl.songs.length) playSong(pl.songs[0], pl.songs, 0);
-});
-document.getElementById(‘plv-del-btn’).addEventListener(‘click’, function() {
-if (!confirm(‘Delete this playlist?’)) return;
-playlists = playlists.filter(function(p) { return p.id !== activePlId; });
-savePls();
-showPage(‘library’);
-});
-function openATP(song) {
-atpSong = song;
-var list = document.getElementById(‘atp-list’);
-if (!playlists.length) {
-list.innerHTML = ‘<div style="padding:16px 20px;color:#555;font-size:14px">No playlists yet. Create one in Library.</div>’;
-} else {
-var html = ‘’;
-for (var i = 0; i < playlists.length; i++) {
-var pl = playlists[i];
-var urls = plArtUrls(pl);
-html += ‘<div class="atp-item" data-atp-id="' + pl.id + '">’
-+ plArtHTML(urls, ‘atp-item-art’)
-+ ‘<div><div class="atp-item-name">’ + esc(pl.name) + ‘</div>’
-+ ‘<div class="atp-item-count">’ + pl.songs.length + ’ songs</div></div>’
-+ ‘</div>’;
-}
-list.innerHTML = html;
-}
-document.getElementById(‘atp-overlay’).classList.add(‘open’);
-list.onclick = function(e) {
-var item = e.target.closest(’.atp-item’);
-if (!item) return;
-var pid = parseInt(item.getAttribute(‘data-atp-id’), 10);
-var pl = playlists.find(function(p) { return p.id === pid; });
-if (pl && atpSong) {
-if (!pl.songs.some(function(s) { return s.id === atpSong.id; })) {
-pl.songs.push(atpSong);
-savePls();
-}
-}
-document.getElementById(‘atp-overlay’).classList.remove(‘open’);
-};
-}
-document.getElementById(‘atp-overlay’).addEventListener(‘click’, function(e) {
-if (e.target === this) this.classList.remove(‘open’);
-});
 
-document.getElementById(‘np-heart-btn’).insertAdjacentHTML(‘afterend’, ‘<button id="np-add-pl-btn" style="background:none;border:none;cursor:pointer;color:#555;padding:6px;display:flex;"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>’);
+- plArtHTML(urls, ‘pl-card-art’)
+- ‘<div class="pl-card-name">’ + esc(pl.name) + ‘</div>’
+- ‘<div class="pl-card-count">’ + pl.songs.length + ’ song’ + (pl.songs.length !== 1 ? ‘s’ : ‘’) + ‘</div>’
+- ‘</div>’;
+  }
+  grid.innerHTML = html;
+  grid.onclick = function(e) {
+  var card = e.target.closest(’.pl-card’);
+  if (card) openPlaylistView(parseInt(card.getAttribute(‘data-pl-id’), 10));
+  };
+  }
+  function openPlaylistView(pid) {
+  activePlId = pid;
+  var pl = playlists.find(function(p) { return p.id === pid; });
+  if (!pl) return;
+  var urls = plArtUrls(pl);
+  document.getElementById(‘plv-art’).outerHTML = plArtHTML(urls, ‘pl-card-art’).replace(‘pl-card-art’, ‘pl-card-art” id=“plv-art’);
+  document.getElementById(‘plv-name’).textContent = pl.name;
+  document.getElementById(‘plv-meta’).textContent = pl.songs.length + ’ song’ + (pl.songs.length !== 1 ? ‘s’ : ‘’);
+  renderPlvList(pl);
+  document.querySelectorAll(’.pg’).forEach(function(el) { el.classList.remove(‘active’); });
+  document.getElementById(‘pg-plview’).classList.add(‘active’);
+  }
+  function renderPlvList(pl) {
+  var el = document.getElementById(‘plv-list’);
+  if (!pl.songs.length) {
+  el.innerHTML = ‘<div class="home-empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><p>Add songs from Search</p></div>’;
+  return;
+  }
+  var html = ‘’;
+  for (var i = 0; i < pl.songs.length; i++) {
+  var s = pl.songs[i];
+  html += ‘<div class="row" data-plv-idx="' + i + '">’
+- ‘<img src="' + s.thumb + '" loading="lazy"/>’
+- ‘<div class="row-info">’
+- ‘<div class="row-title' + (curSong && curSong.id === s.id ? ' playing' : '') + '">’ + esc(s.title) + ‘</div>’
+- ‘<div class="row-artist">’ + esc(s.artist) + ‘</div>’
+- ‘</div>’
+- ‘<button class="like-btn" data-remove-id="' + s.id + '" style="color:#e74c3c">’
+- ‘<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>’
+- ‘</button>’
+- ‘</div>’;
+  }
+  el.innerHTML = html;
+  el.onclick = function(e) {
+  var removeBtn = e.target.closest(’[data-remove-id]’);
+  if (removeBtn) {
+  var id = removeBtn.getAttribute(‘data-remove-id’);
+  var pl2 = playlists.find(function(p) { return p.id === activePlId; });
+  if (pl2) { pl2.songs = pl2.songs.filter(function(s) { return s.id !== id; }); savePls(); openPlaylistView(activePlId); }
+  return;
+  }
+  var row = e.target.closest(’.row’);
+  if (row) {
+  var idx = parseInt(row.getAttribute(‘data-plv-idx’), 10);
+  var pl3 = playlists.find(function(p) { return p.id === activePlId; });
+  if (pl3) playSong(pl3.songs[idx], pl3.songs, idx);
+  }
+  };
+  }
+  document.getElementById(‘new-pl-btn’).addEventListener(‘click’, function() {
+  document.getElementById(‘pl-name-input’).value = ‘’;
+  document.getElementById(‘pl-modal-overlay’).classList.add(‘open’);
+  setTimeout(function() { document.getElementById(‘pl-name-input’).focus(); }, 300);
+  });
+  document.getElementById(‘pl-modal-cancel’).addEventListener(‘click’, function() {
+  document.getElementById(‘pl-modal-overlay’).classList.remove(‘open’);
+  });
+  document.getElementById(‘pl-modal-overlay’).addEventListener(‘click’, function(e) {
+  if (e.target === this) this.classList.remove(‘open’);
+  });
+  document.getElementById(‘pl-modal-create’).addEventListener(‘click’, function() {
+  var name = document.getElementById(‘pl-name-input’).value.trim();
+  if (!name) return;
+  playlists.push({ id: Date.now(), name: name, songs: [] });
+  savePls();
+  document.getElementById(‘pl-modal-overlay’).classList.remove(‘open’);
+  renderLibrary();
+  });
+  document.getElementById(‘plv-back’).addEventListener(‘click’, function() { showPage(‘library’); });
+  document.getElementById(‘plv-play-btn’).addEventListener(‘click’, function() {
+  var pl = playlists.find(function(p) { return p.id === activePlId; });
+  if (pl && pl.songs.length) playSong(pl.songs[0], pl.songs, 0);
+  });
+  document.getElementById(‘plv-del-btn’).addEventListener(‘click’, function() {
+  if (!confirm(‘Delete this playlist?’)) return;
+  playlists = playlists.filter(function(p) { return p.id !== activePlId; });
+  savePls();
+  showPage(‘library’);
+  });
+  function openATP(song) {
+  atpSong = song;
+  var list = document.getElementById(‘atp-list’);
+  if (!playlists.length) {
+  list.innerHTML = ‘<div style="padding:16px 20px;color:#555;font-size:14px">No playlists yet. Create one in Library.</div>’;
+  } else {
+  var html = ‘’;
+  for (var i = 0; i < playlists.length; i++) {
+  var pl = playlists[i];
+  var urls = plArtUrls(pl);
+  html += ‘<div class="atp-item" data-atp-id="' + pl.id + '">’
+- plArtHTML(urls, ‘atp-item-art’)
+- ‘<div><div class="atp-item-name">’ + esc(pl.name) + ‘</div>’
+- ‘<div class="atp-item-count">’ + pl.songs.length + ’ songs</div></div>’
+- ‘</div>’;
+  }
+  list.innerHTML = html;
+  }
+  document.getElementById(‘atp-overlay’).classList.add(‘open’);
+  list.onclick = function(e) {
+  var item = e.target.closest(’.atp-item’);
+  if (!item) return;
+  var pid = parseInt(item.getAttribute(‘data-atp-id’), 10);
+  var pl = playlists.find(function(p) { return p.id === pid; });
+  if (pl && atpSong) {
+  if (!pl.songs.some(function(s) { return s.id === atpSong.id; })) {
+  pl.songs.push(atpSong);
+  savePls();
+  }
+  }
+  document.getElementById(‘atp-overlay’).classList.remove(‘open’);
+  };
+  }
+  document.getElementById(‘atp-overlay’).addEventListener(‘click’, function(e) {
+  if (e.target === this) this.classList.remove(‘open’);
+  });
+
+console.log(‘Chopify: about to insert np-add-pl-btn…’);
+var heartBtn = document.getElementById(‘np-heart-btn’);
+if (heartBtn) {
+heartBtn.insertAdjacentHTML(‘afterend’, ‘<button id="np-add-pl-btn" style="background:none;border:none;cursor:pointer;color:#555;padding:6px;display:flex;"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>’);
 document.getElementById(‘np-add-pl-btn’).addEventListener(‘click’, function() {
 if (curSong) openATP(curSong);
 });
-// renderLibrary on library tab
+console.log(‘Chopify: np-add-pl-btn inserted OK’);
+} else {
+console.error(‘Chopify: np-heart-btn not found! Cannot insert add-to-playlist button.’);
+}
+
 document.getElementById(‘nt-library’).addEventListener(‘click’, function() { renderLibrary(); });
+console.log(‘Chopify: all listeners attached, calling renderHome…’);
 renderHome();
+console.log(‘Chopify: init complete’);
 </script>
 
 </body>

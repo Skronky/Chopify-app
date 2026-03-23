@@ -651,7 +651,7 @@ best = j.results[i]; break;
 var art = best.artworkUrl100;
 console.log('Chopify: art url', art);
 if (!art) return;
-art = art.replace('100x100bb', '100000x100000-999');
+art = art.replace('100x100bb.jpg', '600x600bb.jpg');
 setNPArt(art);
 })
 .catch(function(err) { console.error('Chopify: iTunes fetch error', err); });

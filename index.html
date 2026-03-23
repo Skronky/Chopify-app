@@ -102,6 +102,58 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
 .pg { display:none; }
 .pg.active { display:block; }
 
+/* PLAYLISTS PAGE */
+#pl-header { padding:56px 20px 20px; display:flex; align-items:center; justify-content:space-between; }
+#pl-header h1 { font-family:“Bebas Neue”,sans-serif; font-size:42px; }
+#new-pl-btn { background:none; border:none; color:#1db954; cursor:pointer; padding:4px; display:flex; }
+#pl-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 16px 16px; }
+.pl-card { background:#1c1c1c; border-radius:14px; padding:14px; cursor:pointer; border:1px solid #2c2c2c; }
+.pl-card:active { background:#242424; }
+.pl-card-art { width:100%; aspect-ratio:1; border-radius:10px; background:#242424; margin-bottom:10px; overflow:hidden; display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+.pl-card-art img { width:100%; height:100%; object-fit:cover; }
+.pl-card-art.empty { display:flex; align-items:center; justify-content:center; color:#555; }
+.pl-card-name { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pl-card-count { font-size:11px; color:#a0a0a0; margin-top:2px; }
+
+/* PLAYLIST VIEW */
+#plv-header { padding:56px 20px 20px; }
+#plv-back { background:none; border:none; color:#a0a0a0; cursor:pointer; display:flex; align-items:center; gap:6px; font-size:14px; font-family:“Outfit”,sans-serif; padding:0 0 16px; }
+#plv-art { width:160px; height:160px; border-radius:14px; background:#242424; margin-bottom:16px; overflow:hidden; display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+#plv-art img { width:100%; height:100%; object-fit:cover; }
+#plv-art.empty { display:flex; align-items:center; justify-content:center; color:#555; }
+#plv-name { font-family:“Bebas Neue”,sans-serif; font-size:36px; letter-spacing:0.5px; }
+#plv-meta { font-size:13px; color:#a0a0a0; margin-top:4px; }
+#plv-actions { display:flex; gap:10px; margin-top:16px; }
+#plv-play-btn { display:flex; align-items:center; gap:8px; background:#1db954; border:none; border-radius:24px; padding:10px 22px; font-size:13px; font-weight:700; font-family:“Outfit”,sans-serif; color:#000; cursor:pointer; }
+#plv-play-btn:active { background:#1ed760; }
+#plv-del-btn { background:none; border:1.5px solid #2c2c2c; border-radius:24px; padding:10px 18px; font-size:13px; font-weight:700; font-family:“Outfit”,sans-serif; color:#a0a0a0; cursor:pointer; }
+#plv-list { display:flex; flex-direction:column; }
+
+/* NEW PLAYLIST MODAL */
+#pl-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:200; display:none; align-items:flex-end; }
+#pl-modal-overlay.open { display:flex; }
+#pl-modal { background:#141414; border-radius:20px 20px 0 0; padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px)); width:100%; }
+#pl-modal h3 { font-family:“Bebas Neue”,sans-serif; font-size:26px; margin-bottom:16px; }
+#pl-modal input { width:100%; background:#242424; border:1.5px solid #2c2c2c; border-radius:12px; padding:13px 16px; font-size:15px; font-family:“Outfit”,sans-serif; color:#fff; outline:none; margin-bottom:14px; }
+#pl-modal input:focus { border-color:#1db954; }
+#pl-modal-btns { display:flex; gap:10px; }
+#pl-modal-cancel { flex:1; padding:12px; border-radius:24px; border:1.5px solid #2c2c2c; background:none; color:#a0a0a0; font-size:14px; font-weight:700; font-family:“Outfit”,sans-serif; cursor:pointer; }
+#pl-modal-create { flex:1; padding:12px; border-radius:24px; border:none; background:#1db954; color:#000; font-size:14px; font-weight:700; font-family:“Outfit”,sans-serif; cursor:pointer; }
+
+/* ADD TO PLAYLIST MODAL */
+#atp-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:200; display:none; align-items:flex-end; }
+#atp-overlay.open { display:flex; }
+#atp-sheet { background:#141414; border-radius:20px 20px 0 0; padding:8px 0 calc(16px + env(safe-area-inset-bottom,0px)); width:100%; max-height:70vh; overflow-y:auto; }
+#atp-handle { width:36px; height:4px; background:#2c2c2c; border-radius:2px; margin:10px auto 16px; }
+#atp-title { font-family:“Bebas Neue”,sans-serif; font-size:22px; padding:0 20px 12px; border-bottom:1px solid #2c2c2c; margin-bottom:8px; }
+.atp-item { display:flex; align-items:center; gap:12px; padding:12px 20px; cursor:pointer; }
+.atp-item:active { background:#1c1c1c; }
+.atp-item-art { width:44px; height:44px; border-radius:8px; background:#242424; overflow:hidden; display:grid; grid-template-columns:1fr 1fr; gap:1px; flex-shrink:0; }
+.atp-item-art img { width:100%; height:100%; object-fit:cover; }
+.atp-item-art.empty { display:flex; align-items:center; justify-content:center; color:#555; }
+.atp-item-name { font-size:14px; font-weight:500; }
+.atp-item-count { font-size:12px; color:#a0a0a0; margin-top:2px; }
+
 /* LIKED PAGE */
 #liked-header { padding:56px 20px 20px; background:linear-gradient(180deg,#1a1540 0%,#0a0a0a 100%); }
 #liked-header h1 { font-family:“Bebas Neue”,sans-serif; font-size:48px; letter-spacing:0.5px; margin-bottom:4px; }
@@ -133,6 +185,7 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
 <div id="app">
   <div id="page">
 
+```
 <!-- HOME PAGE -->
 <div class="pg active" id="pg-home">
   <div id="home-header">
@@ -155,6 +208,35 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
   <div id="liked-list"></div>
 </div>
 
+<!-- PLAYLISTS PAGE -->
+<div class="pg" id="pg-library">
+  <div id="pl-header">
+    <h1>Library</h1>
+    <button id="new-pl-btn">
+      <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+  <div id="pl-grid"></div>
+</div>
+
+<!-- PLAYLIST VIEW -->
+<div class="pg" id="pg-plview">
+  <div id="plv-header">
+    <button id="plv-back">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Library
+    </button>
+    <div id="plv-art" class="empty"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+    <div id="plv-name">—</div>
+    <div id="plv-meta">0 songs</div>
+    <div id="plv-actions">
+      <button id="plv-play-btn"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Play All</button>
+      <button id="plv-del-btn">Delete</button>
+    </div>
+  </div>
+  <div id="plv-list"></div>
+</div>
+
 <!-- SEARCH PAGE -->
 <div class="pg" id="pg-search">
   <div id="search-wrap">
@@ -169,7 +251,7 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
     <p>Search for a song to get started</p>
   </div>
 </div>
-
+```
 
   </div>
 </div>
@@ -188,6 +270,10 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
   <button class="ntab" id="nt-liked" onclick="showPage('liked')">
     <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
     <span>Liked</span>
+  </button>
+  <button class="ntab" id="nt-library" onclick="showPage('library')">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    <span>Library</span>
   </button>
 </div>
 
@@ -232,6 +318,29 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
     <button id="np-play-btn"><svg id="np-icon" width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
     <button id="np-next-btn" style="color:#fff"><svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2.5-6 6-4.35V16.3L8.5 12z"/><path d="M16 6h2v12h-2z"/></svg></button>
     <button id="repeat-btn"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
+  </div>
+</div>
+
+<!-- NEW PLAYLIST MODAL -->
+
+<div id="pl-modal-overlay">
+  <div id="pl-modal">
+    <h3>New Playlist</h3>
+    <input type="text" id="pl-name-input" placeholder="Give it a name..." maxlength="40"/>
+    <div id="pl-modal-btns">
+      <button id="pl-modal-cancel">Cancel</button>
+      <button id="pl-modal-create">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TO PLAYLIST MODAL -->
+
+<div id="atp-overlay">
+  <div id="atp-sheet">
+    <div id="atp-handle"></div>
+    <div id="atp-title">Add to Playlist</div>
+    <div id="atp-list"></div>
   </div>
 </div>
 
@@ -611,6 +720,197 @@ document.getElementById('repeat-btn').addEventListener('click', function() {
 document.getElementById('liked-play-btn').addEventListener('click', function() {
   if (liked.length) playSong(liked[0], liked, 0);
 });
+
+// ── Playlists ──
+var playlists = JSON.parse(localStorage.getItem('ch_pls') || '[]');
+var activePlId = null;
+var atpSong = null;
+
+function savePls() { localStorage.setItem('ch_pls', JSON.stringify(playlists)); }
+
+function plArtUrls(pl) {
+  var urls = [];
+  for (var i = 0; i < pl.songs.length && urls.length < 4; i++) {
+    if (pl.songs[i].thumb) urls.push(pl.songs[i].thumb);
+  }
+  return urls;
+}
+
+function plArtHTML(urls, cls) {
+  if (!urls.length) return '<div class="' + cls + ' empty"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>';
+  var imgs = urls.map(function(u) { return '<img src="' + u + '" loading="lazy"/>'; }).join('');
+  return '<div class="' + cls + '">' + imgs + '</div>';
+}
+
+function renderLibrary() {
+  var grid = document.getElementById('pl-grid');
+  if (!playlists.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:40px 0;text-align:center;color:#555;font-size:14px">No playlists yet. Tap + to create one.</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < playlists.length; i++) {
+    var pl = playlists[i];
+    var urls = plArtUrls(pl);
+    html += '<div class="pl-card" data-pl-id="' + pl.id + '">'
+      + plArtHTML(urls, 'pl-card-art')
+      + '<div class="pl-card-name">' + esc(pl.name) + '</div>'
+      + '<div class="pl-card-count">' + pl.songs.length + ' song' + (pl.songs.length !== 1 ? 's' : '') + '</div>'
+      + '</div>';
+  }
+  grid.innerHTML = html;
+  grid.onclick = function(e) {
+    var card = e.target.closest('.pl-card');
+    if (card) openPlaylistView(parseInt(card.getAttribute('data-pl-id'), 10));
+  };
+}
+
+function openPlaylistView(pid) {
+  activePlId = pid;
+  var pl = playlists.find(function(p) { return p.id === pid; });
+  if (!pl) return;
+  var urls = plArtUrls(pl);
+  document.getElementById('plv-art').outerHTML = plArtHTML(urls, 'pl-card-art').replace('pl-card-art', 'pl-card-art" id="plv-art');
+  document.getElementById('plv-name').textContent = pl.name;
+  document.getElementById('plv-meta').textContent = pl.songs.length + ' song' + (pl.songs.length !== 1 ? 's' : '');
+  renderPlvList(pl);
+  document.querySelectorAll('.pg').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('pg-plview').classList.add('active');
+}
+
+function renderPlvList(pl) {
+  var el = document.getElementById('plv-list');
+  if (!pl.songs.length) {
+    el.innerHTML = '<div class="home-empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><p>Add songs from Search</p></div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < pl.songs.length; i++) {
+    var s = pl.songs[i];
+    html += '<div class="row" data-plv-idx="' + i + '">'
+      + '<img src="' + s.thumb + '" loading="lazy"/>'
+      + '<div class="row-info">'
+      + '<div class="row-title' + (curSong && curSong.id === s.id ? ' playing' : '') + '">' + esc(s.title) + '</div>'
+      + '<div class="row-artist">' + esc(s.artist) + '</div>'
+      + '</div>'
+      + '<button class="like-btn" data-remove-id="' + s.id + '" style="color:#e74c3c">'
+      + '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>'
+      + '</button>'
+      + '</div>';
+  }
+  el.innerHTML = html;
+  el.onclick = function(e) {
+    var removeBtn = e.target.closest('[data-remove-id]');
+    if (removeBtn) {
+      var id = removeBtn.getAttribute('data-remove-id');
+      var pl2 = playlists.find(function(p) { return p.id === activePlId; });
+      if (pl2) { pl2.songs = pl2.songs.filter(function(s) { return s.id !== id; }); savePls(); openPlaylistView(activePlId); }
+      return;
+    }
+    var row = e.target.closest('.row');
+    if (row) {
+      var idx = parseInt(row.getAttribute('data-plv-idx'), 10);
+      var pl3 = playlists.find(function(p) { return p.id === activePlId; });
+      if (pl3) playSong(pl3.songs[idx], pl3.songs, idx);
+    }
+  };
+}
+
+// New playlist modal
+document.getElementById('new-pl-btn').addEventListener('click', function() {
+  document.getElementById('pl-name-input').value = '';
+  document.getElementById('pl-modal-overlay').classList.add('open');
+  setTimeout(function() { document.getElementById('pl-name-input').focus(); }, 300);
+});
+document.getElementById('pl-modal-cancel').addEventListener('click', function() {
+  document.getElementById('pl-modal-overlay').classList.remove('open');
+});
+document.getElementById('pl-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+document.getElementById('pl-modal-create').addEventListener('click', function() {
+  var name = document.getElementById('pl-name-input').value.trim();
+  if (!name) return;
+  playlists.push({ id: Date.now(), name: name, songs: [] });
+  savePls();
+  document.getElementById('pl-modal-overlay').classList.remove('open');
+  renderLibrary();
+});
+
+// Playlist view back + play + delete
+document.getElementById('plv-back').addEventListener('click', function() {
+  showPage('library');
+});
+document.getElementById('plv-play-btn').addEventListener('click', function() {
+  var pl = playlists.find(function(p) { return p.id === activePlId; });
+  if (pl && pl.songs.length) playSong(pl.songs[0], pl.songs, 0);
+});
+document.getElementById('plv-del-btn').addEventListener('click', function() {
+  if (!confirm('Delete this playlist?')) return;
+  playlists = playlists.filter(function(p) { return p.id !== activePlId; });
+  savePls();
+  showPage('library');
+});
+
+// Add to playlist modal
+function openATP(song) {
+  atpSong = song;
+  var list = document.getElementById('atp-list');
+  if (!playlists.length) {
+    list.innerHTML = '<div style="padding:16px 20px;color:#555;font-size:14px">No playlists yet. Create one in Library.</div>';
+  } else {
+    var html = '';
+    for (var i = 0; i < playlists.length; i++) {
+      var pl = playlists[i];
+      var urls = plArtUrls(pl);
+      html += '<div class="atp-item" data-atp-id="' + pl.id + '">'
+        + plArtHTML(urls, 'atp-item-art')
+        + '<div><div class="atp-item-name">' + esc(pl.name) + '</div>'
+        + '<div class="atp-item-count">' + pl.songs.length + ' songs</div></div>'
+        + '</div>';
+    }
+    list.innerHTML = html;
+  }
+  document.getElementById('atp-overlay').classList.add('open');
+  list.onclick = function(e) {
+    var item = e.target.closest('.atp-item');
+    if (!item) return;
+    var pid = parseInt(item.getAttribute('data-atp-id'), 10);
+    var pl = playlists.find(function(p) { return p.id === pid; });
+    if (pl && atpSong) {
+      if (!pl.songs.some(function(s) { return s.id === atpSong.id; })) {
+        pl.songs.push(atpSong);
+        savePls();
+      }
+    }
+    document.getElementById('atp-overlay').classList.remove('open');
+  };
+}
+document.getElementById('atp-overlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+// Add "Add to playlist" button on song rows in search
+// We do this via a 3-dot button - update renderResults to include it
+var _origRenderResults = renderResults;
+renderResults = function() {
+  _origRenderResults();
+  // results are already rendered, we dont add 3-dot here to keep it simple
+  // ATP is triggered from Now Playing instead
+};
+
+// ATP from Now Playing
+document.getElementById('np-heart-btn').insertAdjacentHTML('afterend', '<button id="np-add-pl-btn" style="background:none;border:none;cursor:pointer;color:#555;padding:6px;display:flex;"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>');
+document.getElementById('np-add-pl-btn').addEventListener('click', function() {
+  if (curSong) openATP(curSong);
+});
+
+// Update showPage for library
+var _origShowPage = showPage;
+showPage = function(pg) {
+  _origShowPage(pg);
+  if (pg === 'library') renderLibrary();
+};
 
 // Init
 renderHome();

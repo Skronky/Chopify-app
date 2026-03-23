@@ -638,7 +638,7 @@ return fetch('/api/itunes?q=' + titleOnly)
 if (!j2.results || !j2.results.length) return;
 var art2 = j2.results[0].artworkUrl100;
 if (!art2) return;
-art2 = art2.replace('100x100bb', '100000x100000-999');
+art2 = art2.replace('100x100bb', '600x600bb');
 setNPArt(art2);
 });
 }

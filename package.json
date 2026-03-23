@@ -1,8 +1,0 @@
-{
-  "name": "chopify",
-  "version": "1.0.0",
-  "main": "index.html",
-  "dependencies": {
-    "play-dl": "^1.9.7"
-  }
-}

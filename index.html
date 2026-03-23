@@ -921,17 +921,13 @@ document.getElementById(‘atp-overlay’).classList.remove(‘open’);
 document.getElementById(‘atp-overlay’).addEventListener(‘click’, function(e) {
 if (e.target === this) this.classList.remove(‘open’);
 });
-var _origRenderResults = renderResults;
-renderResults = function() { _origRenderResults(); };
+
 document.getElementById(‘np-heart-btn’).insertAdjacentHTML(‘afterend’, ‘<button id="np-add-pl-btn" style="background:none;border:none;cursor:pointer;color:#555;padding:6px;display:flex;"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>’);
 document.getElementById(‘np-add-pl-btn’).addEventListener(‘click’, function() {
 if (curSong) openATP(curSong);
 });
-var _origShowPage = showPage;
-showPage = function(pg) {
-_origShowPage(pg);
-if (pg === ‘library’) renderLibrary();
-};
+// renderLibrary on library tab
+document.getElementById(‘nt-library’).addEventListener(‘click’, function() { renderLibrary(); });
 renderHome();
 </script>
 

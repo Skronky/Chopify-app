@@ -738,7 +738,7 @@ function renderHome(){
   el.innerHTML=`
     <div class="greeting">
       <div class="greeting-time">${new Date().toLocaleDateString('en-US',{weekday:'long'})}</div>
-      <div class="greeting-title">${greet},<br><span>let's vibe.</span></div>
+      <div class="greeting-title">${greet},<br><span>let&#39;s vibe.</span></div>
     </div>
     ${likedSongs.length?`
     <div class="section">
@@ -912,10 +912,8 @@ function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function openNewPlaylist(){ document.getElementById('pl-name-input').value=''; openModal('new-playlist-modal'); setTimeout(()=>document.getElementById('pl-name-input').focus(),300); }
 
-window.addEventListener('load',function(){
-  document.querySelectorAll('.modal-overlay').forEach(function(el){
-    el.addEventListener('click',function(e){ if(e.target===el) el.classList.remove('open'); });
-  });
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
 });
 
 // ============================================================
@@ -936,11 +934,7 @@ document.addEventListener('keydown',e=>{
 // ============================================================
 // INIT
 // ============================================================
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',function(){renderCurrentPage();});
-}else{
-  renderCurrentPage();
-}
+renderCurrentPage();
 </script>
 
 </body>

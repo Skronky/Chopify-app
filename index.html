@@ -416,28 +416,39 @@ function renderLiked() {
 var recs = [];
 var recsLoaded = false;
 
-// Recs are built from search results — no extra API quota needed
-function updateRecs() {
-  if (!searchResults.length || !curSong) return;
-  var seen = {};
-  playHistory.forEach(function(s) { seen[s.id] = true; });
-  liked.forEach(function(s) { seen[s.id] = true; });
-  recs = searchResults
-    .filter(function(s) { return !seen[s.id]; })
-    .slice(0, 10);
-  recsLoaded = true;
-  if (curPage === 'home') renderHome();
-}
-
 function fetchRecs() {
-  // If we already have search results use them
-  if (searchResults.length) { updateRecs(); return; }
   if (!playHistory.length) return;
-  // Otherwise do one search based on last played artist
   var seed = playHistory[0];
-  var artist = seed.artist.replace(/ - Topic$/, '').replace(/VEVO$/i, '').trim();
-  var q = encodeURIComponent(artist + ' songs');
-  fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=15&q=' + q + '&key=' + YT_KEY)
+
+  // Step 1: Get video tags using videos.list (costs only 1 quota unit)
+  fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet&id=' + seed.id + '&key=' + YT_KEY)
+    .then(function(r) { return r.json(); })
+    .then(function(j) {
+      var tags = [];
+      if (j.items && j.items.length && j.items[0].snippet.tags) {
+        tags = j.items[0].snippet.tags;
+      }
+
+      // Step 2: Build a smart query from tags
+      // Filter out tags that are just the song/artist name, keep genre-like ones
+      var artist = seed.artist.replace(/ - Topic$/i, '').replace(/VEVO$/i, '').replace(/official$/i, '').trim().toLowerCase();
+      var title = seed.title.toLowerCase();
+      var genreTags = tags.filter(function(t) {
+        var tl = t.toLowerCase();
+        return tl !== artist && !title.includes(tl) && !tl.includes(artist) && t.length > 3 && t.length < 30;
+      }).slice(0, 3);
+
+      var q;
+      if (genreTags.length) {
+        q = encodeURIComponent(genreTags.join(' ') + ' music');
+      } else {
+        // Fallback: clean artist search
+        q = encodeURIComponent(artist + ' music');
+      }
+
+      // Step 3: Search using those tags
+      return fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=15&q=' + q + '&key=' + YT_KEY);
+    })
     .then(function(r) { return r.json(); })
     .then(function(j) {
       if (!j.items) { recsLoaded = true; renderHome(); return; }
@@ -482,26 +493,7 @@ function renderHome() {
     html += '</div></div>';
   }
 
-  // Recommendations
-  if (recs.length) {
-    html += '<div class="sec"><div class="sec-head"><div class="sec-title">Recommended</div>'
-      + '<button id="refresh-recs-btn" style="background:none;border:none;color:#555;cursor:pointer;padding:4px;display:flex;">'
-      + '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>'
-      + '</button></div>';
-    html += '<div class="hscroll">';
-    for (var r = 0; r < recs.length; r++) {
-      var rc = recs[r];
-      html += '<div class="hcard" data-rec-idx="' + r + '">'
-        + '<img src="' + rc.thumb + '" loading="lazy"/>'
-        + '<div class="hcard-title">' + esc(rc.title) + '</div>'
-        + '<div class="hcard-artist">' + esc(rc.artist) + '</div>'
-        + '</div>';
-    }
-    html += '</div></div>';
-  } else if (playHistory.length && !recsLoaded) {
-    html += '<div class="sec"><div class="sec-head"><div class="sec-title">Recommended</div></div>'
-      + '<div style="padding:0 16px 8px;color:#555;font-size:13px;">Loading...</div></div>';
-  }
+
 
   if (liked.length) {
     html += '<div class="sec"><div class="sec-head"><div class="sec-title">Liked Songs</div></div>';
@@ -522,18 +514,6 @@ function renderHome() {
   }
 
   el.innerHTML = html;
-
-  // Refresh recs button
-  var refreshBtn = document.getElementById('refresh-recs-btn');
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      recs = [];
-      recsLoaded = false;
-      renderHome();
-      fetchRecs();
-    });
-  }
 
   // Event delegation for all home cards
   el.onclick = function(e) {
@@ -600,7 +580,7 @@ function doSearch(q) {
       });
       setStatus(searchResults.length ? 'hidden' : 'empty');
       renderResults();
-      if (curSong) updateRecs();
+
     })
     .catch(function() { setStatus('empty'); });
 }

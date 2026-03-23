@@ -102,6 +102,14 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
 .pg { display:none; }
 .pg.active { display:block; }
 
+/* LIKED PAGE */
+#liked-header { padding:56px 20px 20px; background:linear-gradient(180deg,#1a1540 0%,#0a0a0a 100%); }
+#liked-header h1 { font-family:“Bebas Neue”,sans-serif; font-size:48px; letter-spacing:0.5px; margin-bottom:4px; }
+#liked-header p { font-size:13px; color:#a0a0a0; }
+#liked-play-btn { display:flex; align-items:center; gap:8px; background:#1db954; border:none; border-radius:24px; padding:10px 22px; font-size:13px; font-weight:700; font-family:“Outfit”,sans-serif; color:#000; cursor:pointer; margin-top:16px; }
+#liked-play-btn:active { background:#1ed760; }
+#liked-list { display:flex; flex-direction:column; }
+
 /* HOME */
 #home-header { padding:56px 20px 20px; }
 #home-greeting { font-size:12px; font-weight:600; letter-spacing:2px; color:#555; text-transform:uppercase; margin-bottom:6px; }
@@ -125,6 +133,7 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
 <div id="app">
   <div id="page">
 
+```
 <!-- HOME PAGE -->
 <div class="pg active" id="pg-home">
   <div id="home-header">
@@ -132,6 +141,19 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
     <div id="home-title">chop<span>ify</span></div>
   </div>
   <div id="home-content"></div>
+</div>
+
+<!-- LIKED PAGE -->
+<div class="pg" id="pg-liked">
+  <div id="liked-header">
+    <h1>Liked Songs</h1>
+    <p id="liked-count">0 songs</p>
+    <button id="liked-play-btn">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      Play All
+    </button>
+  </div>
+  <div id="liked-list"></div>
 </div>
 
 <!-- SEARCH PAGE -->
@@ -148,7 +170,7 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
     <p>Search for a song to get started</p>
   </div>
 </div>
-
+```
 
   </div>
 </div>
@@ -163,6 +185,10 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
   <button class="ntab" id="nt-search" onclick="showPage('search')">
     <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <span>Search</span>
+  </button>
+  <button class="ntab" id="nt-liked" onclick="showPage('liked')">
+    <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    <span>Liked</span>
   </button>
 </div>
 
@@ -236,10 +262,48 @@ function showPage(pg) {
   document.getElementById('pg-' + pg).classList.add('active');
   document.getElementById('nt-' + pg).classList.add('active');
   if (pg === 'home') renderHome();
+  if (pg === 'liked') renderLiked();
 }
 
 // History tracking
 var playHistory = JSON.parse(localStorage.getItem('ch_hist') || '[]');
+
+function renderLiked() {
+  document.getElementById('liked-count').textContent = liked.length + ' song' + (liked.length !== 1 ? 's' : '');
+  var el = document.getElementById('liked-list');
+  if (!liked.length) {
+    el.innerHTML = '<div class="home-empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><p>Songs you like will appear here</p></div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < liked.length; i++) {
+    var s = liked[i];
+    html += '<div class="row" data-liked-play="' + i + '">'
+      + '<img src="' + s.thumb + '" loading="lazy"/>'
+      + '<div class="row-info">'
+      + '<div class="row-title' + (curSong && curSong.id === s.id ? ' playing' : '') + '">' + esc(s.title) + '</div>'
+      + '<div class="row-artist">' + esc(s.artist) + '</div>'
+      + '</div>'
+      + '<button class="like-btn liked" data-liked-id="' + s.id + '">' + heartFull() + '</button>'
+      + '</div>';
+  }
+  el.innerHTML = html;
+
+  el.onclick = function(e) {
+    var unlikeBtn = e.target.closest('.like-btn');
+    if (unlikeBtn) {
+      var id = unlikeBtn.getAttribute('data-liked-id');
+      var song = liked.find(function(s) { return s.id === id; });
+      if (song) { toggleLike(song); renderLiked(); }
+      return;
+    }
+    var row = e.target.closest('.row');
+    if (row && row.hasAttribute('data-liked-play')) {
+      var idx = parseInt(row.getAttribute('data-liked-play'), 10);
+      playSong(liked[idx], liked, idx);
+    }
+  };
+}
 
 function renderHome() {
   var h = new Date().getHours();
@@ -542,6 +606,11 @@ document.getElementById('shuffle-btn').addEventListener('click', function() {
 document.getElementById('repeat-btn').addEventListener('click', function() {
   repeatMode = (repeatMode + 1) % 3;
   this.style.color = repeatMode > 0 ? '#1db954' : '#a0a0a0';
+});
+
+// Liked play all
+document.getElementById('liked-play-btn').addEventListener('click', function() {
+  if (liked.length) playSong(liked[0], liked, 0);
 });
 
 // Init

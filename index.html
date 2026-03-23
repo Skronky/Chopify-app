@@ -325,6 +325,8 @@ transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
   </div>
 </div>
 
+<div id="yt-player" style="position:fixed;bottom:0;right:0;width:320px;height:180px;opacity:0.01;pointer-events:none;z-index:-1;"></div>
+
 <script>
 // ===== DEBUG: REMOVE BEFORE PRODUCTION =====
 window.onerror = function(msg, src, line, col, err) {
@@ -534,33 +536,50 @@ playSong(liked[idx3], liked, idx3);
 };
 }
 
-// Native audio player
-var audio = new Audio();
-audio.preload = 'none';
-ytOk = true; // reuse flag to mean "player ready"
-
-audio.addEventListener('playing', function() { setIcons(true); startProg(); });
-audio.addEventListener('pause', function() { setIcons(false); stopProg(); });
-audio.addEventListener('ended', function() {
-  stopProg();
-  if (repeatMode === 2) { audio.currentTime = 0; audio.play(); }
-  else nextSong();
+function onYouTubeIframeAPIReady() {
+console.log('Chopify: YouTube API ready');
+yt = new YT.Player('yt-player', {
+height: '180', width: '320',
+playerVars: { autoplay: 0, controls: 0, playsinline: 0 },
+events: {
+onReady: function() { ytOk = true; yt.setVolume(100); console.log('Chopify: YT player ready'); },
+onStateChange: function(e) {
+if (e.data === YT.PlayerState.PLAYING) {
+setIcons(true); startProg();
+tryPiP();
+}
+else if (e.data === YT.PlayerState.PAUSED) { setIcons(false); stopProg(); }
+else if (e.data === YT.PlayerState.ENDED) {
+stopProg();
+if (repeatMode === 2) { yt.seekTo(0); yt.playVideo(); }
+else nextSong();
+}
+}
+}
 });
-audio.addEventListener('error', function(e) {
-  console.error('Chopify: audio error', e);
-});
+}
+(function() {
+var s = document.createElement('script');
+s.src = 'https://www.youtube.com/iframe_api';
+document.head.appendChild(s);
+})();
 
-function loadAndPlay(songId) {
-  console.log('Chopify: fetching stream URL for', songId);
-  fetch('/api/stream?id=' + songId)
-    .then(function(r) { return r.json(); })
-    .then(function(j) {
-      if (!j.url) { console.error('Chopify: no stream URL returned'); return; }
-      console.log('Chopify: got stream URL, playing...');
-      audio.src = j.url;
-      audio.play().catch(function(err) { console.error('Chopify: play error', err); });
-    })
-    .catch(function(err) { console.error('Chopify: stream fetch error', err); });
+function tryPiP() {
+var iframe = document.getElementById('yt-player');
+if (!iframe) return;
+var video = iframe.querySelector('video');
+if (!video) {
+// YouTube iframe loads video element async, retry
+setTimeout(tryPiP, 1000);
+return;
+}
+if (document.pictureInPictureEnabled && video.readyState >= 1) {
+video.requestPictureInPicture().then(function() {
+console.log('Chopify: PiP activated');
+}).catch(function(err) {
+console.warn('Chopify: PiP failed', err);
+});
+}
 }
 
 document.getElementById('search-input').addEventListener('input', function() {
@@ -735,8 +754,8 @@ navigator.mediaSession.metadata = new MediaMetadata({
 title: song.title, artist: song.artist, album: 'Chopify',
 artwork: [{ src: song.thumb, sizes: '320x180', type: 'image/jpeg' }]
 });
-navigator.mediaSession.setActionHandler('play', function() { audio.play(); });
-navigator.mediaSession.setActionHandler('pause', function() { audio.pause(); });
+navigator.mediaSession.setActionHandler('play', function() { yt && yt.playVideo(); });
+navigator.mediaSession.setActionHandler('pause', function() { yt && yt.pauseVideo(); });
 navigator.mediaSession.setActionHandler('nexttrack', nextSong);
 navigator.mediaSession.setActionHandler('previoustrack', prevSong);
 }
@@ -744,12 +763,12 @@ var isFirst = playHistory.length === 0;
 playHistory = [song].concat(playHistory.filter(function(s) { return s.id !== song.id; })).slice(0, 30);
 localStorage.setItem('ch_hist', JSON.stringify(playHistory));
 if (isFirst || playHistory.length % 5 === 0) { recs = []; recsLoaded = false; fetchRecs(); }
-if (ytOk) loadAndPlay(song.id);
+if (ytOk) yt.loadVideoById(song.id);
 }
 
 function togglePlayback() {
-if (!curSong) return;
-audio.paused ? audio.play() : audio.pause();
+if (!ytOk || !curSong) return;
+yt.getPlayerState() === YT.PlayerState.PLAYING ? yt.pauseVideo() : yt.playVideo();
 }
 function nextSong() {
 if (!queue.length) return;
@@ -758,7 +777,7 @@ playSong(queue[n], queue, n);
 }
 function prevSong() {
 if (!queue.length) return;
-if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+if (ytOk && yt.getCurrentTime() > 3) { yt.seekTo(0); return; }
 var n = (qIdx - 1 + queue.length) % queue.length;
 playSong(queue[n], queue, n);
 }
@@ -773,8 +792,9 @@ if ('mediaSession' in navigator) navigator.mediaSession.playbackState = p ? 'pla
 function startProg() {
 stopProg();
 progTimer = setInterval(function() {
-var c = audio.currentTime || 0;
-var d = audio.duration || 0;
+if (!ytOk) return;
+var c = yt.getCurrentTime() || 0;
+var d = yt.getDuration() || 0;
 var pct = d ? (c / d * 100) : 0;
 document.getElementById('np-bar-fill').style.width = pct + '%';
 document.getElementById('mini-prog-fill').style.width = pct + '%';
@@ -838,8 +858,8 @@ document.getElementById('np').addEventListener('touchend', function(e) {
 if (e.changedTouches[0].clientY - _sy > 80) document.getElementById('np').classList.remove('open');
 }, { passive: true });
 document.getElementById('np-bar').addEventListener('click', function(e) {
-if (!curSong || !audio.duration) return;
-audio.currentTime = (e.offsetX / this.offsetWidth) * audio.duration;
+if (!ytOk || !curSong) return;
+yt.seekTo((e.offsetX / this.offsetWidth) * (yt.getDuration() || 0));
 });
 document.getElementById('mini-play-btn').addEventListener('click', function(e) { e.stopPropagation(); togglePlayback(); });
 document.getElementById('mini-prev-btn').addEventListener('click', function(e) { e.stopPropagation(); prevSong(); });
